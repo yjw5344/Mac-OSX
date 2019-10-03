@@ -4,8 +4,6 @@ Youtube에 있는 [Mac OSX](https://www.youtube.com/watch?v=-7GMHB3Plc8) 세미�
 
 # Mac OSX 역사
 
-<br>
-
 ![Apple History](./img/AppleHistory.png)
 
 애플은 1984년 128KB 크기의 RAM, 68KB 크기의 CPU를 가지고, 싱글태스킹(Single Tasking)을 지원하는 매킨토시를 출시했다.
@@ -15,8 +13,6 @@ Youtube에 있는 [Mac OSX](https://www.youtube.com/watch?v=-7GMHB3Plc8) 세미�
 당시에 이런 이유로 System7은 Window95를 전혀 따라가지 못했고, 같은 해에 애플은 Microsoft에서 NT를 개발했던 것처럼 새로운 운영체제를 개발하기로 결정했다. 개발 과정에서 이전의 운영체제와 동일한 API를 사용하여 기본에 사용하는 애플리케이션이 수정 없이 사용 가능하도록 했다. 이 프로젝트를 CopeLand라고 했으며, 프로젝트 진행에 어려움을 겪으며 결국 1996년에 취소되었다.
 
 이후에 애플은 개발을 취소하고 새로운 운영체제 시스템을 구매하기로 결정한다. 그 당시 2가지의 운영체제를 고려하고 있었는데, 하나는 Steve Jobs가 1985년 애플을 떠나면서 설립한 NEXT STEP의 운영체제였다. 두번째는 BeOS였다. BeOS는 매킨토시 개발을 총괄하던 Gassee가 1991년 애플을 떠나면서 만든 운영체제이다. 애플은 초기에 BeOS를 구매하려고 했으나, 최종적으로 NEXT STEP의 운영체제를 구매하게 되면서 스티브잡스가 애플의 새로운 CEO가 되는 계기가 되었다.
-
-<br>
 
 ![NEXT STEP](./img/NextStep.png)
 
@@ -52,6 +48,8 @@ XNU의 특징
 * 컴포던트(파일시스템, 프레임워크, 보안요소, 유저모드 인터페이스, 네트워크, 디바이스 드라이버)가 커널모드에서 실행된다.
 * 시스템콜(System call)을 사용하여 커뮤니케이션을 실행
 
+<br>
+
 ## 모놀리딕 커널(Monolithic Kernel) 장점/단점
 <장점>
 * 각 컴포넌트(Component) 사이의 커뮤니케이션이 효율적이다.
@@ -59,6 +57,8 @@ XNU의 특징
 <단점>
 * 디바이스 드라이버와 같이 컴포넌트(Component)를 추가/삭제 하려면 커널을 재빌드 해야 한다. 
 * 하나의 컴포넌트가(Component)가 정지하면 전체 시스템 멈춘다.
+
+<br>
 
 ## 모놀리딕 커널(Monolithic Kernel) 호출 구조
 
@@ -80,6 +80,8 @@ XNU의 특징
 * 스케줄러, 메모리 메니저, 프로세서 간 통신, low-level 하드웨어와 같은 꼭 필요한 부분만 커널에서 다룬다.
 * 파일시스템과 네트워크와 같은 컴포넌트(Compnent)는 사용자모드(User Mode)의 각각의 주소공간에서 구현된다.
 
+<br>
+
 ## 마이크로 커널(Micro Kernel) 장점/단점
 <장점>
 * 컴포넌트(Component)가 분리되어 있어 드라이버, 파일시스템, 네트워크 프로토콜과 같은 컴포넌트(Component)의 충돌에도 전체 시스템이 정지하지 않는다.
@@ -99,6 +101,8 @@ XNU의 특징
 ## BSD Single Server의 특징
 * 마이크로 커널(Micro Kernel)에 BSD 아키텍쳐를 적용
 * 기존의 마이크로 커널에서 유저모드(User Mode)에 존재하는 컴포넌트를 BSD 형태의 하나의 서버로 구성
+
+<br>
 
 ## 마이크로 커널(Micro Kernel) 호출 구조
 
@@ -200,6 +204,8 @@ OSX의 커널은 UNIX 기반이지만 마이크로 커널인 Mach과 BSD가 합�
 * 이외의 BSD의 컴포넌트(BSD sockets, /dev, File System)는 Syscall 인터페이스를 통해 사용된다.
 * Mach의 Message API는 유저(user)에 의해 간접적으로 사용된다.
 * Mach, BSD에서 사용하는 2가지 형태의 syscall 인터페이스가 존재한다.
+
+<br>
 
 ## 시스템 콜 (System Call, syscall)
 * syscall(시스템 콜) 핸들러는 syscall(시스템 콜) 숫자를 보고 구분한다.
