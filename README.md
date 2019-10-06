@@ -212,10 +212,93 @@ OSX의 커널은 UNIX 기반이지만 마이크로 커널인 Mach과 BSD가 합�
 * 양수(>0)는 BSD syscall(시스템 콜)을 호출한다.
 * 음수(<0)의 syscall(시스템 콜)은 Mach의 API를 호출한다.
 * 애플은 안정적인 syscall(시스템 콜) 인터페이스를 보장하지 않기 때문에, syscall(시스템 콜)은 직접적으로 실행되지 않고 libc 라이브러리를 거쳐 실행된다.
-* 이런 이유로 바이너리에는 libc를 복사한 형태인 실행파일을 담고 있기 때문에, OSX는 정적 바이너리를 사용하지 않는다.
+* 위와 같은 이유로 바이너리에는 libc를 복사한 형태인 실행파일을 담고 있기 때문에, OSX는 정적 바이너리를 사용하지 않는다.
 
 <br>
 
---- 여기까지 완료 --- 
-# Driver
-추후 업데이트
+# Drivers
+
+![Drivers](./img/Drivers1.png)
+
+윈도우와 리눅스에서 드라이버가 어떻게 개발되는지 설명하겠습니다.
+
+## <윈도우와 리눅스에서의 드라이버 제작>
+1. 기존 드라이버의 C파일을 복사합니다.
+2. 복사한 C파일의 일부를 변경해서 새로운 드라이버 파일을 만들 수 있습니다.
+
+___이런 방법은 드라이버 전체 코드를 복사하기 때문에 복사하는 코드가 많고 복잡합니다.___
+
+![Drivers](./img/Drivers2.png)
+
+이전의 그림에서 설명한 드라이버 제작의 문제점을 해결하기 위한 방법입니다. (___driver.c 파일과 driver2.c 파일을 하나의 driver.c 파일로 합친다.___)
+
+기존의 드라이버 C파일과 이를 복사하여 제작한 C파일을 하나의 C파일로 통합하고 런타임 테스트를 진행하며 차이점을 표시하는 것입니다.
+
+만약, 성능에 문제가 있으면 통합한 파일을 읽는 것과 런타임을 하는 것 모두 불가능합니다.
+
+
+![I/O-Kit](./img/IO-Kit1.png) 
+
+OSX에서 I/O Kit은 드라이버의 기반입니다. OSX는 위에서 설명한 드라이버 제작의 문제점을 다른 방법으로 해결했습니다.
+
+## <I/O-Kit 특징>
+- 객체지향 개념을 사용
+- C++ 프로그래밍을 사용
+
+___2가지 방법을 이용해 기존에 존재한 드라이버 제작의 문제점을 해결했습니다.___
+
+![I/O-Kit](./img/IO-Kit2.png)
+
+## <I/O-Kit Driver 제작>
+- 일반 드라이버(generic.c)를 기본 클래스로 사용합니다.
+- 구체적으로 만들고자 하는 드라이버에서 일반 드라이버(generic.c)를 상속 받아 사용합니다.
+- 새롭게 제작하는 드라이버에서 필요한 기능은 오버라이딩을 이용합니다.
+
+<br>
+
+# Kext (Kernel Extension)
+
+I/O-Kit 드라이버는 특별한 형태의 Kext(Kernel Extension)입니다.
+
+## <Kext의 특징>
+- Kext는 리눅스의 커널처럼 커널이 작동(runtime)할 때, 로드(load)된다.
+- Kext는 파일 시스템 드라이버, 네트워크 프로토콜 등을 포함한다.
+- 커널에서 필요한 인터페이스(interface)를 제공하면, Kext는 그에 해당하는 기능을 제공한다.
+
+![Info.plist](./img/Info_plist.png)
+
+몇몇 Kext는 시스템 라이브러리 확장(System Library Extension)을 가지고 있습니다.(예, ___Apple abd keyboard___ Kext, ___Apple podcast___ Kext, ... )
+
+위의 사진은 ms-dos 파일 시스템 Kext입니다. 이 파일은 fat file System 드라이버이며, Kext 파일은 단순한 파일이 아니라 info.plist와 같은 몇몇 파일의 바이너리를 포함하고 있는 실제 경로(directory)를 가지고 있습니다.
+
+~~~
+바이너리 파일 : 소스코드가 아니라 실행파일을 나타낸다.
+~~~
+
+<br>
+
+위 사진의 오른쪽 아래는 info.plist 파일입니다. info.plist 파일은 Kext에 대한 메타 정보( 애플리케이션 바이너리 인터페이스 ___(Application Binary Interface)___ 가 필요로 하는 XNU 컴포넌트의 버전 )를 가지고 있습니다.
+
+~~~
+API(Application Programming Interface) : 함수의 역할
+ABI(Application Binary Interface) : API와 비슷하지만 바이너리에서 호환이 가능하다
+~~~
+
+info.plist에는 libKern 라이브러리를 정보를 가지고 있습니다. libKern은 XNU에서 사용하는 C++기반의 객체, 데이터 타입과 같은 다양한 유틸리티 함수를 제공하는 작은 컴포넌트(Component)입니다. 하지만, libKern을 이용하지 않은 함수 같은 경우에는 차후에 출시될 Mac OS에서 Apple이 호환을 해주지 않습니다.
+
+<br>
+
+# Booting
+
+![Booting](./img/Booting1.png)
+
+![Booting](./img/Booting2.png)
+
+![Booting](./img/Booting3.png)
+
+<br>
+
+# Mach-O
+
+![Mach-O](./img/Mach-O.png)
+
