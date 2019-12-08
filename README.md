@@ -1,6 +1,6 @@
 # Mac OS X Study
 
-Mac OS X의 Kernel Extension(Kext) 및 System Extension 개발을 위해 학습한 것을 정리한 Repogitory 입니다. 주로 Mac & IOS Internals PDF를 이용하여 학습을 진행하고 부족한 부분은 Github 및 [Apple Developer](https://developer.apple.com/library/archive/documentation/Darwin/Conceptual/KernelProgramming/Extend/Extend.html)Document를 참고했습니다.
+Mac OS X의 Kernel Extension(Kext) 및 System Extension 개발을 위해 학습한 것을 정리한 Repogitory 입니다. 주로 Mac & IOS Internals PDF를 이용하여 학습을 진행하고 부족한 부분은 Github 및 [Apple Developer](https://developer.apple.com/library/archive/documentation/Darwin/Conceptual/KernelProgramming/Extend/Extend.html) Document를 참고했습니다.
 
 ## Mac OS X 개념 정리
 
