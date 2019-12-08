@@ -20,15 +20,15 @@
 
 스레드는 Mach의 원자 단위 실행을 정의합니다. 스레드는 기본 시스템 레지스터 상태 및 다양한 스케줄링 통계를 나타냅니다. kern/thread.h에 정의된 스레드는 가능한 가장 낮은 오버 헤드를 유지하면서 스케줄링에 필요한 최대 정보를 제공하도록 설계되었습니다. (목록 11-1 참조)
 
-![11-1](../img/chapter11/11_11_1.PNG)
+![11-1](../../img/chapter11/11_11_1.PNG)
 
-![11-2](../img/chapter11/11_11_2.PNG)
+![11-2](../../img/chapter11/11_11_2.PNG)
 
-![11-3](../img/chapter11/11_11_3.PNG)
+![11-3](../../img/chapter11/11_11_3.PNG)
 
-![11-4](../img/chapter11/11_11_4.PNG)
+![11-4](../../img/chapter11/11_11_4.PNG)
 
-![11-5](../img/chapter11/11_11_5.PNG)
+![11-5](../../img/chapter11/11_11_5.PNG)
 
 앞의 구조는 엄청 나기 때문에 대부분의 스레드는 일반 템플릿을 복제하여 만들어지며,이 구조는 기본값으로 구조를 채웁니다. 이 템플릿은 osfmk/thread/thread.c에 정의된 thread_template입니다. 커널 부트 (i386_init에서)이라고 불리는 thread_bootstrap() 의해 채워지며 thread_create () Mach API를 구현하는 thread_create_internal ()에서 복사됩니다.
 
@@ -44,17 +44,17 @@
 
 Task는 목록 11-2에 표시된 것처럼 osfmk/kern/task.h에 정의된 비교적 가벼운 구조(적어도 스레드와 비교하여)입니다. 주목할만한 필드가 강조됩니다.
 
-![11-6](../img/chapter11/11_11_6.PNG)
+![11-6](../../img/chapter11/11_11_6.PNG)
 
-![11-7](../img/chapter11/11_11_7.PNG)
+![11-7](../../img/chapter11/11_11_7.PNG)
 
-![11-8](../img/chapter11/11_11_8.PNG)
+![11-8](../../img/chapter11/11_11_8.PNG)
 
 Task 자체에는 생명이 없습니다. 그것은 하나 이상의 스레드의 컨테이너 역할을합니다. Task의 스레드는 이전 코드에서 강조 표시된대로 thread_count 스레드를 포함하는 큐인 스레드 멤버에서 유지 보수됩니다.
 
 또한 Task에 대한 대부분의 operation은 실제로 주어진 Task의 모든 스레드에 대해 동일한 해당 스레드 작업의 반복입니다. 예를 들어, 작업 우선 순위를 설정하기 위해 task_ priority ()가 목록 11-3과 같이 구현됩니다.
 
-![11-9](../img/chapter11/11_11_9.PNG)
+![11-9](../../img/chapter11/11_11_9.PNG)
 
 queue_iterate 매크로는 queue_head_t를 반복합니다. 차례로 각 스레드가 잠깁니다. 활성화 된 경우 우선 순위를 설정할 수 있습니다. 그런 다음 스레드를 잠금 해제 할 수 있습니다
 
@@ -82,9 +82,9 @@ Mach는 Task를 처리하기 위한 하위 시스템 기능을 제공합니다. 
 
 표 11-1에는 이러한 기능이 자세히 나와 있으며, 이 기능은 모두 Mach 메시지(MIG 하위 시스템 3400)를 통해 구현됩니다.
 
-![11-10](../img/chapter11/11_11_10.PNG)
+![11-10](../../img/chapter11/11_11_10.PNG)
 
-![11-11](../img/chapter11/11_11_11.PNG)
+![11-11](../../img/chapter11/11_11_11.PNG)
 
 작업 포트는 작업, 해당 스레드 및 리소스를 완벽하게 제어 할 수있는 경로입니다. 위의 표에 표시된 API는 Mach가 작업에서 허용하는 작업 중 일부일뿐입니다. 다음 섹션에서는 작업 스레드를 외부에서 조작하는 방법을 보여줍니다. 이러한 기능은 kernel_task에 적용될 때 상당히 강력 해집니다. 권한있는 사용자가 커널 메모리를 들여다보고 수정할 수 있습니다.
 
@@ -96,11 +96,11 @@ task_info 사용하면 10-19처럼 확장하는 것이 가능하고 Task에 대�
 
 Listing 11-4는 task_info를 사용하여 Lion 이상에서 지원되는 일부 기능을 쿼리하는 방법을 보여줍니다.
 
-![11-12](../img/chapter11/11_11_12.PNG)
+![11-12](../../img/chapter11/11_11_12.PNG)
 
-![11-13](../img/chapter11/11_11_13.PNG)
+![11-13](../../img/chapter11/11_11_13.PNG)
 
-![11-14](../img/chapter11/11_11_14.PNG)
+![11-14](../../img/chapter11/11_11_14.PNG)
 
 이 함수를 Listing 10-19에 연결하는 것은 간단하다. 이 실험과 유사한 방식으로 thread_info () 함수를 사용하여 스레드 레벨까지 드릴 다운 할 수 있습니다. 이것은 다음에 논의되는 많은 스레드 API 중 하나입니다.
 
@@ -108,9 +108,9 @@ Listing 11-4는 task_info를 사용하여 Lion 이상에서 지원되는 일부 
 
 Mach는 Task와 마찬가지로 스레드 관리를 위한 풍부한 API를 제공합니다. 이들 대부분은 Task와 동일한 기능을 수행합니다. 실제로 task API는 종종 각 task의 스레드 목록을 반복하여 차례로 적용합니다. 예상 할 수 있듯이, 이러한 호출 (mach_ thread_self 제외)은 Mach 메시지를 통해 구현되며 MIG 하위 시스템 (3600)에 의해 생성됩니다. 표 11-3에는 스레드 API가 나열되어 있습니다. 별다른 언급이없는 한 모두는 kern_return_t를 반환합니다.
 
-![11-15](../img/chapter11/11_11_15.PNG)
+![11-15](../../img/chapter11/11_11_15.PNG)
 
-![11-16](../img/chapter11/11_11_16.PNG)
+![11-16](../../img/chapter11/11_11_16.PNG)
 
 실습으로, 이전 실험에서 목록을 확장하여 스레드도 나열 할 수 있습니다. 이는 태스크 포트에서 task_threads ()를 호출하고 리턴된 각 스레드 포트에서 thread_info(THREAD_ BASIC_INFO 사용)를 호출하여 수행 할 수 있습니다.
 
@@ -118,15 +118,15 @@ Mach는 Task와 마찬가지로 스레드 관리를 위한 풍부한 API를 제�
 
 Mach는 커널 모드에서만 액세스 할 수 있는 일련의 스레드 제어 기능을 제공합니다. 이들은 osfmk/kern/sched_prim.h에 선언되어 있으며 이들 중 일부는 표 11-4에 나와 있습니다.
 
-![11-17](../img/chapter11/11_11_17.PNG)
+![11-17](../../img/chapter11/11_11_17.PNG)
 
-![11-18](../img/chapter11/11_11_18.PNG)
+![11-18](../../img/chapter11/11_11_18.PNG)
 
 ### Thread APIs - Thread Creation
 
 스레드 생성 API가 특히 중요합니다. 포함되는 task의 외부에 스레드가 존재할 수 없고 API는 task.h에 구현되어 있습니다.
 
-![11-19](../img/chapter11/11_11_19.PNG)
+![11-19](../../img/chapter11/11_11_19.PNG)
 
 첫 번째 인수를 주목하십시오. task_t는 스레드가 생성 될 작업입니다. 이것은 마하의 관점에서 사용자가 해당 포트가있는 모든 작업에서 스레드를 만들 수 있음을 의미합니다. 이는 Mach 인프라가 원격 스레드를 생성 할 수 있는 유연성을 제공합니다. 따라서 pthread_create()를 사용하면 mach_task_self()를 첫 번째 인수로 사용하여 Mach의 thread_create에 대한 기본 API 호출이 발생합니다. 그러나 다른 task 포트가 있으면 스레드를 삽입 할 수 있습니다. 주입 된 스레드가 작업의 가상 메모리에 대한 전체 액세스 권한을 획득하고 감지하기가 매우 어려우므로 올바른 (또는 잘못된)기능이 구현 될 수 있습니다.
 
@@ -164,15 +164,15 @@ procesor-set 추상화를 통해 Mach는 Linux 또는 Windows보다 다소 적�
 
 ps의 -l 스위치를 사용하면 실행중인 모든(-e) 프로세스의 우선 순위와 멋진 값이 모두 표시됩니다. 먼저 OS X에서 tr 및 cut을 선택적으로 사용하여 우선 순위, nice value 및 command name을 분리할 수 있습니다.
 
-![11-20](../img/chapter11/11_11_20.PNG)
+![11-20](../../img/chapter11/11_11_20.PNG)
 
-![11-21](../img/chapter11/11_11_21.PNG)
+![11-21](../../img/chapter11/11_11_21.PNG)
 
 ### Priorities - Priority Shifts
 
 스레드 우선 순위를 지정하는 것이 시작이지만 종종 런타임 중에 이러한 우선 순위를 조정해야합니다. Mach는 스레드의 CPU 사용량 및 전체 시스템로드를 수용하기 위해 각 스레드의 우선 순위를 동적으로 조정합니다. 따라서 스레드는 우선 순위 대역에서“드리프트”되어 CPU를 너무 많이 사용하면 우선 순위가 감소하고 CPU가 충분하지 않으면 우선 순위가 높아집니다. 기존 스케줄러는 osfmk/kern/priority.c 에서 매크로(do_priority_computation)와 함수 (update_priority)를 사용하여 각 스레드의 우선 순위를 동적으로 업데이트합니다. 매크로는 계산 된 sched_usage (함수에 의해 계산되고 CPU 사용량 델타를 고려한)를 pri_shift 값만큼 이동하여 스레드 우선 순위를 토글합니다. pri_shift 값은 글로벌 sched_pri_shift에서 파생되며, 이는 스케줄러에 의해 정기적으로 compute_averages(osfmk / kern / sched_average.c)의 시스템로드 계산의 일부로 업데이트됩니다. CPU 사용량 델타를 빼면 CPU 사용량이 높은 스레드에 효과적으로 불이익을주고 (긍정적 인 사용량 델타가 우선 순위를 떨어 뜨림) CPU 사용량이 적은 스레드에 대해 보상합니다 (음의 사용량 델타가 우선 순위에 추가됨). 스레드의 CPU 사용량이 페널티가 치명적인 지점에 도달하지 않도록하기 위해 update_priority 함수는 점차 CPU 사용량을 노후화합니다. sched_decay_shifts 구조를 사용하여 (11-8)에 표시된 것과 동일한 파일에 정의된 n만큼 CPU 사용량의 지수 감쇄를 시뮬레이션합니다. 사전 계산 된 시프트 값을 사용하여 비트 시프트 및 덧셈으로 표현되는 계산 속도를 높일 수 있으며 곱셈보다 시간이 덜 걸립니다.
 
-![11-22](../img/chapter11/11_11_22.PNG)
+![11-22](../../img/chapter11/11_11_22.PNG)
 
 Mach는 또한 "throttling"을 지원하며 우선 순위 조절 프로세스, 즉 시스템에 의해 의도적으로 불이익을받는 프로세스에 대해 MAXPRI_THROTTLE를 정의합니다. Mach 호스트 API는 다양한 우선 순위 레벨을보고하는 host_priority_info 구조를 리턴하는 host_info() 함수에 HOST_ PRIORITY_INFO 기능을 제공합니다.
 
@@ -182,9 +182,9 @@ Mach는 또한 "throttling"을 지원하며 우선 순위 조절 프로세스, �
 
 스레드는 run 큐에 배치되며, 목록 11-6에 표시된 것처럼 osfmk/kern/sched.h에 정의 된 우선 순위 목록입니다.
 
-![11-23](../img/chapter11/11_11_23.PNG)
+![11-23](../../img/chapter11/11_11_23.PNG)
 
-![11-24](../img/chapter11/11_11_24.PNG)
+![11-24](../../img/chapter11/11_11_24.PNG)
 
 run 큐는 다중 우선 순위 목록 또는 128 개의 우선 순위 각각에 대해 하나의 큐인 목록의 배열입니다. 실행할 다음 우선 순위를 빠르게 검색하기 위해 Mach는 O(1) 스케줄링이라는 기술을 사용합니다. 즉, 배열을 보지 않고 NULL이 아닌 항목이 발견 될 때까지 각 항목을 검사합니다. 기술적으로 O(1)이지만 실제로는 O(128) 스케줄링입니다. Mach는 비트 맵을 확인하여 32 비트를 동시에 볼 수 있습니다. 이는 스케줄링 로직이 빈번하고 중요한 시간에 실행된다는 점을 고려할 때 조회 속도 O(4)를 가능한 한 빠르고 가장 중요하게 만듭니다.
 
@@ -192,7 +192,7 @@ run 큐는 다중 우선 순위 목록 또는 128 개의 우선 순위 각각에
  
 스레드에 새로운 우선 순위를 할당하면 스레드를 한 큐에서 다른 큐로 이동한다는 의미이므로 코드는 스레드의 sched_pri 필드를 직접 수정할 수 없습니다. 이는 set_sched_pri (osfmk / kern / sched_prim.c)에 의해 수행되며, 이는 compute_priority (osfmk / kern / priority.c)에서 호출됩니다. 그림 11-2에 나와 있습니다.
 
-![11-25](../img/chapter11/11_11_25.PNG)
+![11-25](../../img/chapter11/11_11_25.PNG)
 
 ### Run Queues - Wait Queues
 
@@ -200,7 +200,7 @@ run 큐는 다중 우선 순위 목록 또는 128 개의 우선 순위 각각에
 
 이러한 경우 스레드가 대기 큐에 배치 될 수 있습니다. 대기 queue_t는 osfmk/kern/kern_types.h에서 불투명 한 지점으로 정의되며, 목록 11-7에 표시된 것처럼 osfmk/kern/wait_queue.c에서 구현됩니다.
 
-![11-26](../img/chapter11/11_11_26.PNG)
+![11-26](../../img/chapter11/11_11_26.PNG)
 
 대기 큐 처리 기능은 osfmk/kern/wait_queue.h의 커널 구성 요소에서 사용하기 위해 내보내집니다. 대기 대기열에 스레드를 추가하기 위해 wait_queue_assert_wait [64 [_ locked]] 변형을 사용할 수 있습니다. 스레드가 실시간, 특권 또는 FIFO 대기 큐에있는 경우를 제외하고 함수는 모두 큐의 끝에 스레드를 큐에 넣습니다 (이 경우 큐의 헤드에 큐에 대기). 이 함수는 assert_wait (osfmk/kern/sched_prim.c) 및 기타 래퍼 (커널 전체, 특히 BSD 계층)에 의해 추가로 래핑됩니다.
 
@@ -249,9 +249,9 @@ continuation에 대한 매개 변수는 thread_block_parameter()에 의해 지�
 
 continuation은 컨텍스트 전환 비용을 완화하기 위한 빠르고 효율적인 메커니즘이며 주로 마하의 커널 스레드에서 사용됩니다. 실제로, Mach의 kernel_thread_create (및 주요 호출자 인 kernel_thread_start_priority)는 Listing 11-8에 표시된 것처럼 연속 개념을 기반으로 구축되었습니다.
 
-![11-27](../img/chapter11/11_11_27.PNG)
+![11-27](../../img/chapter11/11_11_27.PNG)
 
-![11-28](../img/chapter11/11_11_28.PNG)
+![11-28](../../img/chapter11/11_11_28.PNG)
 
 continuation은 커널 스레드에서 특히 매력적입니다. continuation을 설정하는 것은 단순히 스레드 진입 점이므로 간단합니다. 따라서 마하 커널 스레드가 시작되는 방식입니다. 사용자 모드 스레드 작성은 또한 thread_create_ internal2에서 연속을 thread_bootstrap_return()으로 설정하여 continuation을 사용합니다. 이것은 단지 DTrace 후크이며, thread_exception_return()이 뒤 따르며, 이는 사용자 모드로 돌아갑니다.
 
@@ -266,9 +266,9 @@ continuation은 커널 스레드에서 특히 매력적입니다. continuation�
 
 명시적 선점을 제공하기 위해 Mach는 thread_block_reason() 함수를 제공합니다. osfmk/kern/sched_prim.c에 정의된 함수는 continuation 함수, 매개 변수 및 reason의 세 가지 매개 변수를 사용합니다. 그 이유는 나중에 논의 할 AST_ (비동기 소프트웨어 트랩) 상수입니다.
 
-![11-29](../img/chapter11/11_11_29.PNG)
+![11-29](../../img/chapter11/11_11_29.PNG)
 
-![11-30](../img/chapter11/11_11_30.PNG)
+![11-30](../../img/chapter11/11_11_30.PNG)
 
 thread_block_parameter() 및 thread_block()이라는 두 가지 도우미 함수도 정의되어 있습니다. 전자는 reason 매개 변수를 AST_NONE으로 설정하여 thread_block_reason()을 호출하고 후자는 동일하게 수행하지만 매개 변수를 NULL로 설정합니다.
 
@@ -278,11 +278,11 @@ thread_invoke() 함수는 컨텍스트 전환을 수행하고 continuation을 �
 
 높은 수준의 관점에서 그림 11-3과 같이 작업이 실제로 매우 간단합니다.
 
-![11-31](../img/chapter11/11_11_31.PNG)
+![11-31](../../img/chapter11/11_11_31.PNG)
 
 call_continuation()은 상태를 복원하는 훨씬 빠른 기계 의존적 메커니즘입니다. 코드 11-10은 x86_64에서 어떻게 효율적인 코드로 구현 될 수 있는지 보여줍니다.
 
-![11-32](../img/chapter11/11_11_32.PNG)
+![11-32](../../img/chapter11/11_11_32.PNG)
 
 ### MACH SCHEDULER SPECIFICS - Preemption Modes - Implicit Preemption
 
@@ -296,11 +296,11 @@ Mac OS 9는 명시적 선점 개념을 중심으로 구축 되었기 때문에 �
 
 스레드는 자체 스케줄링을 명시적으로 제어 할 수 없지만 Mach는 서비스 클래스를 보장하기 위해 작동 할 수 있는 몇 가지 사전 설정된 정책을 제공합니다. Mach는 실시간 공유 시스템이 아니라 시분할 시스템이므로 서비스를 보장 할 수는 없기 때문에 “work toward”를 참고하십시오. 사용자 모드에서 볼 수 있는 마하 트랩인 thread_ policy_set ()을 사용하면 이러한 정책을 요청할 수 있습니다. 이 기능은 다음과 같이 osfmk/kern/thread_policy.c에 정의되어 있습니다.
 
-![11-33](../img/chapter11/11_11_33.PNG)
+![11-33](../../img/chapter11/11_11_33.PNG)
 
 이 함수는 인수 (즉, 스레드가 THREAD_NULL이 아니고 스레드-> static_param이 false 임)를 확인한 후 thread 인수를 flavor 인수에 대해 switch()를 호출하는 thread_policy_set_internal()을  호출합니다. 표 11-6 항목 중 하나 일 수 있습니다.
 
-![11-34](../img/chapter11/11_11_34.PNG)
+![11-34](../../img/chapter11/11_11_34.PNG)
 
 이러한 특성을 통해 개별 스레드의 일정을 세밀하게 제어 할 수 있습니다. 기본 정책 THREAD_STANDARD_POLICY는 공정한 시간 공유에 사용됩니다. 추가 매개 변수가 필요하지 않습니다. THREAD_EXTENDED_POLICY는 이를 기반으로하며 false인 경우 대체 정책을 지정하고 true인 경우 표준 정책으로 돌아가는 부울 매개 변수 timeshare를 추가합니다.
 
@@ -318,9 +318,9 @@ THREAD_BACKGROUND_POLICY는 백그라운드 스레드에 사용됩니다. 즉, �
 
 Task는 "role"필드를 제공하여 일정 수준의 일정을 조정합니다.이 작업은 표 11-7에 표시된 다음 중 하나 일 수 있습니다.
 
-![11-35](../img/chapter11/11_11_35.PNG)
+![11-35](../../img/chapter11/11_11_35.PNG)
 
-![11-36](../img/chapter11/11_11_36.PNG)
+![11-36](../../img/chapter11/11_11_36.PNG)
 
 따라서 Task "role"은 스레드 예약에 영향을 줍니다.
 
@@ -332,51 +332,51 @@ AST는 기술적인 비하드웨어 트랩 상태입니다. AST는 커널 작업
 
 AST는 스레드의 제어 블록에서 다양한 비트의 필드로 구현되며 thread_ast_set()에 대한 호출로 개별적으로 설정할 수 있습니다. Listing 11-11과 같이 매크로이다.
 
-![11-37](../img/chapter11/11_11_37.PNG)
+![11-37](../../img/chapter11/11_11_37.PNG)
 
 Mach에서 정의된 "reason"은 osfmk/kern/ast.h에 있지만 실제로 문서화가 잘되어 있지 않습니다. 표 11-8은 정의 된 AST와 그 목적을 보여줍니다.
 
-![11-38](../img/chapter11/11_11_38.PNG)
+![11-38](../../img/chapter11/11_11_38.PNG)
 
 AST는 콤보에서도 사용될 수 있으며, 이는 이전 플래그의 비트 단위 OR입니다. 이것들은 표 11-9에 나와 있습니다.
 
-![11-39](../img/chapter11/11_11_39.PNG)
+![11-39](../../img/chapter11/11_11_39.PNG)
 
 콤보는 AST를 두 가지 클래스로 분류하는데 사용됩니다: 선점 관련 클래스와 스케줄러에서 설정 또는 설정 해제 할 수 있는 클래스
 
 시스템이 트랩(user_trap_return 호출 후) 또는 인터럽트(INTERRUPT 호출 후)에서 복귀하면 즉시 사용자 모드로 돌아 가지 않습니다. 대신 코드는 스레드의 필드를 보고 AST가 있는지 확인합니다. 0이 아닌 경우 목록 11-12에 표시된 것처럼 i386_astintr()을 호출하여 처리합니다.
 
-![11-40](../img/chapter11/11_11_40.PNG)
+![11-40](../../img/chapter11/11_11_40.PNG)
 
 그림 11-4는 목록 11-12와 같이 트랩 및 인터럽트에서 복귀 할 때의 AST 검사 점을 보여줍니다. 따라서 AST는 모든 인터럽트가 활성화 된 상태로 실행되지만 여전히 "프로세스 시간을 벗어난" 상태에서 실행된다는 점에서 Linux의 softIRQ와 약간 비슷합니다.
 
-![11-41](../img/chapter11/11_11_41.PNG)
+![11-41](../../img/chapter11/11_11_41.PNG)
 
-![11-42](../img/chapter11/11_11_42.PNG)
+![11-42](../../img/chapter11/11_11_42.PNG)
 
 커널 트랩 및 커널 스레드 종료시 호출 될 수 있는 ast_taken 함수는 모든 스레드에서 AST를 처리하여 커널 유휴 스레드를 저장합니다. AST_URGENT 및 AST_PREEMPT (AST_PREEMPTION 콤보)로 표시된 AST는 스레드를 즉시 선점합니다. 그렇지 않으면 이 함수는 AST 이벤트(신호와 같은)를 Mach에 넣었지만 임시적으로 해킹 한 AST_BSD를 확인합니다. BSD AST가 설정되면 신호를 처리하기 위해 bsd_ast(bsd/kern/kern_sig.c에서)가 호출됩니다. 
 
 AST의 특별한 경우는 Preemption Free Zone(PFZ)으로 알려진 통신 영역의 특수 영역에서 기능이 실행될 때입니다. 이 영역에서는 뛰어난 AST가 지연됩니다. 주소가 PFZ에있는 것으로 확인되면 AST는 PFZ가 종료 될 때까지 보류 중으로 표시됩니다. PFZ 나 commpage는 잘 문서화되어 있지 않지만 제공되는 내용은 목록 11-14에 나와 있습니다.
 
-![11-43](../img/chapter11/11_11_43.PNG)
+![11-43](../../img/chapter11/11_11_43.PNG)
 
 ## Scheduling Algorithms
 
 마하의 스레드 스케줄링은 확장성이 뛰어나며 실제로 스레드 스케줄링에 사용되는 알고리즘을 변경할 수 있습니다. 표 11-10은 osfmk/kern/sched_prim.h를 보면 무엇을 보게되는지 보여줍니다.
 
-![11-44](../img/chapter11/11_11_44.PNG)
+![11-44](../../img/chapter11/11_11_44.PNG)
 
 일반적으로 기존 스케줄러는 하나의 스케줄러만 사용 가능하지만 마하 아키텍처에서는 컴파일 중에 해당 CONFIG_SCHED_ 지시문을 사용하여 추가 스케줄러를 정의하고 선택할 수 있습니다. 사용되는 스케줄러는 스케줄러 boot-arg 또는 장치 트리 항목으로 지정할 수 있습니다.
 
 각 스케줄러 객체는 sched_dispatch_table 구조를 유지하며, 여기서 다양한 연산(생각 : 메소드)은 함수 포인터로 유지됩니다. 글로벌 테이블 sched_current_dispatch는 현재 활성 스케줄링 알고리즘을 보유하며 런타임 중에 스케줄러 전환을 허용합니다. 모든 스케줄러는 동일한 필드를 구현해야하며, 일반 스케줄러 로직은 SCHED 매크로를 사용하여 호출합니다 (목록 11-15 참조).
 
-![11-45](../img/chapter11/11_11_45.PNG)
+![11-45](../../img/chapter11/11_11_45.PNG)
 
-![11-46](../img/chapter11/11_11_46.PNG)
+![11-46](../../img/chapter11/11_11_46.PNG)
 
-![11-47](../img/chapter11/11_11_47.PNG)
+![11-47](../../img/chapter11/11_11_47.PNG)
 
-![11-48](../img/chapter11/11_11_48.PNG)
+![11-48](../../img/chapter11/11_11_48.PNG)
 
 스레드 스케줄링을 계속 유지하기 위해 모든 스케줄은 maintenance_continuation 기능을 구현합니다. 이것은 커널 스레드에 대해이 장의 앞부분에서 설명한 연속 메커니즘을 적용한 것입니다. 여기에서 스케줄러 스레드는 clock_deadline_ for_periodic_event를 사용하여 시계 알림을 등록합니다. assert_wait_deadline을 호출하면 스레드가 지정된 최종 기한 내에 실행되고 스레드가 계속 차단됩니다. 프로세스는 스케줄러의 초기화 기능에서 시작됩니다.
 
@@ -396,7 +396,7 @@ AST의 특별한 경우는 Preemption Free Zone(PFZ)으로 알려진 통신 영�
 
 다행히도 이러한 인터럽트 소스가 존재하며 XNU는 이를 실시간 clock 또는 rtclock이라고합니다. 이 clock은 하드웨어에 따라 다릅니다 (Intel 아키텍처는 이러한 목적으로 로컬 CPU의 APIC를 사용함). 주어진 사이클 수 후 인터럽트를 생성하기 위해 커널에 의해 구성 될 수 있습니다. 인터럽트 소스는 종종 타이머 인터럽트라고합니다. 이전 버전의 XNU는 타이머 인터럽트를 초당 고정 횟수 (hz)로 트리거했습니다. 이 값은 커널의 BSD 부분 인 bsd/kern /clock.c에 전체적으로 정의되어 있으며 (목록 11-16에 표시됨)
 
-![11-49](../img/chapter11/11_11_49.PNG)
+![11-49](../../img/chapter11/11_11_49.PNG)
 
 실제로 이것을 경멸해야 할 충분한 이유가 있습니다. 고정된 간격으로 커널을 중단시키는 타이머는 예측 가능하지만 불필요한 인터럽트를 발생시킵니다. hz 값이 너무 높으면 불필요한 인터럽트가 너무 많다는 의미입니다. 반면에, 값이 너무 낮 으면 서브 hz 지연이 타이트한 루프에 의해서만 달성 될 수 있으므로 시스템의 응답성이 떨어집니다. 이전 버전의 OS X에서 사용된 이전 hertz_tick() 함수는 여전히 존재하지만 XNU가 프로파일링으로 컴파일된 경우에만 사용되지 않고 조건부로 컴파일됩니다.
 
@@ -408,7 +408,7 @@ AST의 특별한 경우는 Preemption Free Zone(PFZ)으로 알려진 통신 영�
 
 XNU는 CPU별로 타이머 기반 이벤트를 추적하는데 사용되는 rtclock_timer_t 유형(osfmk/i386/cpu_data.h)을 정의합니다. 이 구조는 타이머의 deadline과 call_entry 구조(osfmk/kern/call_entry.h)의 queue를 기록하며 목록 11-17에 정의된 callout을 유지합니다.
 
-![11-50](../img/chapter11/11_11_50.PNG)
+![11-50](../../img/chapter11/11_11_50.PNG)
 
 rtclock_timer의 queue는 deadline의 오름차순으로 정렬되어 있으며 deadline 필드는 가장 가까운 deadline(예 : 대기열의 헤드 항목)으로 설정됩니다.
 
@@ -422,7 +422,7 @@ deadline 시간 타이머는 timer_queue_assign (osfmk/i386/etimer.c)을 통해 
 
 스케줄러는 스레드의 wait_timer에서 osfmk/kern/timer_call.c의 timer_call_enter를 사용하여 타이머 callout의 상위 레벨 추상화를 통해 timer_queue_assign과 인터페이스합니다. callout은 목록 11-18에 표시된 것처럼 osfmk/kern/timer_ call_entry.h에 미리 설정된 인수가있는 함수 포인터입니다.
 
-![11-51](../img/chapter11/11_11_51.PNG)
+![11-51](../../img/chapter11/11_11_51.PNG)
 
 중요하지 않은 것으로 간주되는 타이머 이벤트에는 소위 "슬로프"값이 추가되어 동시에 만료될 확률을 높이기 위해 이들을 통합하고 (전체 타이머 인터럽트를 줄이게 됩니다).timer_call_enter의 다양한 호출자는 TIMER_CALL_CRITICAL 플래그를 지정하여 중요한 호출로 선언 할 수 있습니다.
 
@@ -432,11 +432,11 @@ deadline 시간 타이머는 timer_queue_assign (osfmk/i386/etimer.c)을 통해 
 
 타이머 인터럽트 처리는 rtclock_intr(osfmk/i386/rtclock.c)에 의해 수행됩니다. 이 기능 자체는 그다지 중요하지 않습니다. 단지 모든 인터럽트가 비활성화되어 어떤 모드 (커널 또는 사용자)가 중단되었는지를 결정하고 기존 스레드의 레지스터를 저장합니다. 실제 작업은 etimer_intr (osfmk/i386/etimer.c)에 대한 호출로 이루어지며, 타이머 deadlineㄴ(rtclock_timer-> 마감일) 또는 전원 관리 deadline(osfmk/i386/pmCPU.c의 pmCPUGetDeadline ()에서 리턴 된대로)이 만료되었는지 여부를 확인합니다. 스케줄러를 deadline 큐의 생산자로 생각할 수 있으며 이 기능은 해당 소비자입니다.
 
-![11-52](../img/chapter11/11_11_52.PNG)
+![11-52](../../img/chapter11/11_11_52.PNG)
 
 타이머에 대해 동작하기 위해 etimer_intr은 timer_queue_expire (또는 전원 관리 관련 마감일의 경우 pmCPUDeadline)를 호출합니다. 이 타이머는 queue를 걷고 두 개의 인수와 함께 만료 된 타이머의 콜 아웃 기능을 호출합니다(또한 호출 전후에 kdebug 이벤트를 기록합니다). 이 함수는 deadline이 아직 만료되지 않은 첫 번째 콜아웃에 도달 할 때까지 콜아웃을 큐에서 호출합니다. queue는 deadline을 늘리는 순서대로 정렬되므로 다른 모든 deadline도 보류됩니다. 만료되지 않은 첫 번째 deadline은 실제로 다음 처리 deadline이되므로 etimer_intr로 반환됩니다. 그림 11-6에 나와 있습니다.
 
-![11-53](../img/chapter11/11_11_53.PNG)
+![11-53](../../img/chapter11/11_11_53.PNG)
 
 ### Timer Interrupt Processing in XNU - Setting the Hardware Pop
 
@@ -445,7 +445,7 @@ deadline 시간 타이머는 하드웨어 수준과 통신해야하며 하드웨
 이 기능은 타이머 또는 전원 관리 기한이 보류 중인지 여부를 확인합니다 (만료 된 후 일정이 변경 될 수 있음). 두 가지 유형의 deadline을 찾으면, 함수는 setPop() (osfmk/i386/rtclock.c)을 호출하여 두 가지 중 더 이른 시점으로 다음 인터럽트를 스케줄합니다. deadline이 없으면 EndOfAllTime을 나타내는 값으로 setPop()이 호출됩니다. setPop()은 rtc_timer 전역을 사용하여 CPU의 로컬 APIC에 타이머를 설정합니다.
 그림 11-7은 etimer_resync_deadlines의 흐름을 보여줍니다.
 
-![11-54](../img/chapter11/11_11_54.PNG)
+![11-54](../../img/chapter11/11_11_54.PNG)
 
 ## EXCEPTIONS
 
@@ -476,7 +476,7 @@ Mach는 하드웨어 추상화 계층을 유지하지 않지만 기계 고유의
 목록 11-19는 일반적인 마하 예외를 보여줍니다.
 <<<stub이란?>>>
 
-![11-55](../img/chapter11/11_11_55.PNG)
+![11-55](../../img/chapter11/11_11_55.PNG)
 
 마찬가지로 Mach 예외 처리기인 exception_triage() (osfmk/kern/exception.c에 있음)는 예외를 Mach 메시지로 변환하는 일반적인 처리기입니다. iOS와 OS X 모두에서 프로세스가 코어 덤프로 종료 될 때마다 BSD의 proc_prepareexit(bsd/kern/kern_exit.c)의 EXC_CRASH와 함께 abnormal_exit_notify (osfmk/kern/exception.c)에서 호출됩니다. 그러나 커널의 다른 곳에서의 호출은 아키텍처에 따라 다릅니다.
 
@@ -490,7 +490,7 @@ i386/x64에서 i386_exception() 함수(osfmk/i386/trap.c에서)는 exception_ tr
 
 > fpextovrflt (osfmk/i386/fpu.c) — 특정 FPU 오류는 부동 소수점 프로세서가 사용자 모드 또는 커널 모드에서 메모리 액세스 오류를 생성 할 때 호출됩니다.
 
-![11-56](../img/chapter11/11_11_56.PNG)
+![11-56](../../img/chapter11/11_11_56.PNG)
 
 ARM에서는 exception_ triage()가 low-level 예외 처리기에서 직접 호출되기 때문에 동등한 arm_exception이 없는 것 같습니다.
 
@@ -506,11 +506,11 @@ exception_triage()는 주요 예외 로직 (마하 메시지 레벨)이 두 아�
 
 앞의 두 가지는 osfmk/kern/ipc_tt.c에 정의되어 있고 후자는 ipc_host.c에 정의되어 있습니다. 그들의 프로토 타입은 모두 매우 유사합니다.
 
-![11-57](../img/chapter11/11_11_57.PNG)
+![11-57](../../img/chapter11/11_11_57.PNG)
 
 "behaviors"(표 11-12 참조)은 예외에 따라 어떤 유형의 메시지가 생성되는지에 대한 기계 독립적 표시입니다. 각 동작에는 (운영 체제에 따라 다를 수 있음) "flavor"이 있습니다.
 
-![11-58](../img/chapter11/11_11_58.PNG)
+![11-58](../../img/chapter11/11_11_58.PNG)
 
 behavior는 해당 함수에 의해 구현됩니다. EXCEPTION_DEFAULT의 경우 [mach]_exception_raise, EXCEPTION_STATE의 경우 [mach]_exception_state_raise 이고 예외 코드가 64 비트 코드인 경우에는 함수 이름이 behavior 상수(소문자임)와 동일하며 [mach] 함수가 대신 사용됩니다. 
 
@@ -522,9 +522,9 @@ behavior는 해당 함수에 의해 구현됩니다. EXCEPTION_DEFAULT의 경우
 
 직접 예외 처리를 시도하려면 목록 11-20에 표시된 기본 예제를 코딩하십시오.
 
-![11-59](../img/chapter11/11_11_59.PNG)
+![11-59](../../img/chapter11/11_11_59.PNG)
 
-![11-60](../img/chapter11/11_11_60.PNG)
+![11-60](../../img/chapter11/11_11_60.PNG)
 
 이 간단한 코드는 세 가지 선택을 제공합니다.
 
@@ -541,17 +541,17 @@ behavior는 해당 함수에 의해 구현됩니다. EXCEPTION_DEFAULT의 경우
 
 여기에 표시된 프로그램은 쓸모가 없습니다. 예외가 발생하지만 처리는하지 않습니다. 훨씬 더 유용한 접근 방식은 예외에 대한 알림을 받을 때 실제로 무언가를 수행하는 것입니다. 이를 위해 mach_msg를 사용하여 예외 포트에서 활성 리스너를 작성하십시오. 동일한 프로그램의 다른 스레드가 이를 수행 할 수 있지만, 두 번째 프로그램이 모두 예외 처리 부분을 구현하면 더 흥미로운 효과를 얻을 수 있습니다. 이는 CrashReporter를 시작할 수 있는 launchd 프로세스의 예외 포트 등록과 유사합니다. Listing 11-20을 외부 예외 처리기로 바꾸는 데 필요한 수정 사항이 Listing 11-21에 나와있습니다.
 
-![11-61](../img/chapter11/11_11_61.PNG)
+![11-61](../../img/chapter11/11_11_61.PNG)
 
-![11-62](../img/chapter11/11_11_62.PNG)
+![11-62](../../img/chapter11/11_11_62.PNG)
 
-![11-63](../img/chapter11/11_11_63.PNG)
+![11-63](../../img/chapter11/11_11_63.PNG)
 
 임의의 프로그램에서이 코드를 테스트하려면 몇 초 동안 잠을 자도록 간단한 프로그램을 만든 다음 작동을 중단하십시오 (선택하십시오 : NULL 포인터 역 참조, 0 나누기 등). 프로그램이 휴면 상태 일 때 예외 처리 프로그램을 빠르게 첨부하십시오. 이 코드는 OS X 및 iOS에서 각각 출력 11-3 및 11-4와 유사한 것을 보여줍니다.
 
-![11-64](../img/chapter11/11_11_64.PNG)
+![11-64](../../img/chapter11/11_11_64.PNG)
 
-![11-65](../img/chapter11/11_11_65.PNG)
+![11-65](../../img/chapter11/11_11_65.PNG)
 
 NU의 BSD 계층이 저수준 마하 예외를 잘 알려진 UNIX 신호로 변환하는 방법을 보여주는 13 장에서 예외 포트가 다시 검토됩니다.
 
