@@ -1,0 +1,254 @@
+# < Chapter 15 : Fee, FI-FP, FIle : File Systems and the VFS >
+
+커널의 주요 책임 중 하나는 사용자와 시스템 모두에서 데이터를 처리하는 것입니다. 이를 위해 데이터는 다양한 유형의 파일 시스템에 상주하는 파일과 디렉토리로 구성됩니다.
+
+XNU의 BSD 계층은 파일 시스템 구현을 담당하며 VFS (Virtual File System Switch)라는 프레임 워크를 사용합니다. Sun의 Solaris 운영 체제에서 시작된이 프레임 워크는 커널과 다양한 파일 시스템 구현 (로컬 및 원격) 사이에서 UNIX에서 사용되는 표준 인터페이스가 되었습니다.
+
+## PRELUDE: DISK DEVICES AND PARTITIONS / 전제조건 : 디스크 장치 및 파티션
+
+OS X 및 iOS는 하드 디스크를 장치 노드로 취급하는 BSD 규칙을 따릅니다. 각 디스크는 블록 장치(/dev/disk#) 또는 문자 장치(/dev/rdisk#)로 액세스 할 수 있습니다. 마찬가지로, 파티션(또는 UNIX에서 "슬라이스")은 /dev/[r]disk#s# 와 비슷한 방식으로 블록과 문자로 액세스 할 수 있습니다.
+
+일반적으로 디스크와 파티션은 블록 장치입니다. 시스템이 파일 시스템을 마운트 할 수 있는 것은 블록 장치 표현을 넘어선 것입니다. raw 모드는 주로 fsck 및 pdisk와 같은 저수준 프로그램에서 사용되며 블록을 직접 찾아 써야합니다.
+
+디스크 드라이버는 또한 <sys/disk.h>에 정의 된 표준 ioctl 인터페이스를 제공하여 다양한 쿼리 작업을 수행 할 수 있습니다. 헤더는 꽤 잘 문서화되어 있으며 목록 15-1에 표시된 코드를 정의합니다.
+
+![15-1](../img/chapter15/15-1.PNG)
+
+![15-2-1](../img/chapter15/15-2-1.PNG)
+
+![15-2-2](../img/chapter15/15-2-2.PNG)
+
+ioctl()에 대한 디스크 장치를 확보하려면 읽기 권한이 필요하며 일반적으로 루트가 아닌 (또는 그룹이 아닌 운영자) 사용자에게는 부여되지 않습니다.
+
+## Partitioning Schemes / 파티션 스키마
+파일 시스템은 자체적으로 존재하지 않습니다. 이들은 디스크의 파티션에 상주합니다. 모든 디스크에는 하나 이상의 파티션이 있으며 파일 시스템을 포함하도록 파티션을 개별적으로 포맷 할 수 있습니다. 경우에 따라 파일 시스템이 여러 파티션에 걸쳐있을 수 있습니다. 파티셔닝 스키마는 디스크 레이아웃을 정의하여 디스크를 연속적인 섹터의 하나 이상의 영역 (따라서 파티션)으로 논리적으로 분할합니다. 일반적으로 여기에는 파티션 테이블에 대한 디스크의 처음 몇 개의 섹터를 예약하는 작업이 포함되며 여기에는 영역 (시작 섹터 및 섹터 수)과 각 파티션의 파일 시스템 유형이 나열됩니다.
+
+OS X은 전통적으로 세 가지 파티션 구성표를 지원했습니다 : 
+
+	- Master Boot Record (MBR) partitioning : MBR은 PC XT와 AT의 옛 시절의 유산이며 오늘날에도 여전히 널리 사용되고 있습니다. 이 파티션 스키마는 BIOS에 의존하며 매우 제한적이며 (최대 4개의 파티션) 32 비트(최대 40억 섹터)이지만 모든 운영 체제에서 보드 전체에서 지원됩니다.
+
+	- Apple Partition Map : 맞춤형 Apple 전용 체계. PPC기반 Mac이 널리 퍼져 있으며, 32비트의 스키마이고 애플 독점입니다. 지금은 다음의 방식 GPT에 찬성하여 더 이상 사용되지 않지만, 여전히 아이팟 클래식과 나노에서 사용되고 있습니다.
+
+	- GUID Partition Table (GPT) : 엑사 바이트 범위 이상으로 디스크 크기에 사용될 수 있는 64 비트 스키마. 또한 최대 파티션 제한을 효과적으로 완화합니다. 이것은 특히 중요합니다. 32 비트 방식인 MBR과 APT는 모두 최대 주소 지정이 가능한 232 섹터를 허용합니다. 표준 섹터 크기가 512 바이트 인 경우 최대 2TB의 디스크 크기가 허용됩니다. 따라서 애플의 기본 파티셔닝 스키마는 64 비트 아키텍처로 옮겨졌습니다. GPT는 EFI 표준의 일부이기도합니다. Apple의 Intel 하드웨어가 EFI 기반이기 때문에 제대로 작동합니다.
+
+	그러나 일부 32 비트 시스템 (주로 Windows XP)은 여전히 GPT를 지원할 수 없습니다. EFI인 Intel의 OS X는 기본적으로 지원합니다. 10.4 현재, Apple 기술 노트에 설명 된대로, GPT는 기본 파티션 스키마로 Apple에서 선호하고 있습니다.
+
+	- Lightweight Volume Manager (LwVM) : iOS 5 이상 (및 일부 구형 Apple TV)에서 사용되는 Apple 독점 파티션 체계. 독점적이고 문서화되지 않았지만 상당히 단순하고 리버스 엔지니어링되었습니다.
+	
+커널 확장은 IOKit의 IOPartitionScheme 클래스 (그 자체가 포함 된 IOStorage의 하위 클래스)에서 상속하여 추가 또는 사용자 정의 파티션 스키마를 구현할 수 있습니다.
+
+## The MBR Partitioning Scheme / MBR 파티셔닝 스키마
+
+16비트의 마지막 유물인 마스터 부트 레코드 스키마는 빠르게 사라지고 있지만 OSX 및 64비트 Windows를 저장하는 다른 모든 운영 체제에서 기본 파티션 스키마로 남아 있습니다. 의심 할 여지없이 가장 간단한 파티셔닝 스키마입니다. BIOS는 시스템을 시작하는데 사용하는 최대 440 바이트의 부트 스트랩 코드를 위해 디스크의 첫 번째 섹터인 부트 섹터를 예약합니다. 440바이트는 일반적으로 offset 446에 있는 파티션 테이블을 읽고 운영체제 별로 c 코드가 있는 파티션의 시작 부분인 파티션 부트 레코드로 이동합니다. 파티션 테이블의 크기는 64 바이트입니다. 이렇게 하면 MBR signature인 0x55AA로 고정된 2개의 사용 가능한 바이트만 남게 됩니다.
+
+MBR 테이블은 매우 단순하게 유지됩니다. 항상 64바이트이기 때문에 "기본" 파티션 항목을 4개까지만 허용합니다. 각 항목의 길이는 정확히 16바이트이며 파티션 유형, 크기 및 주소를 설명합니다. 표의 항목은 파티션 시작 및 끝 주소를 실린더/헤드/섹터(C/H/S) 좌표 또는 일반적으로 큰 블록 주소(LBA) offset의 두 가지 형식 중 하나로 제공합니다. C/H/S 체계는 오늘날의 표준에 따라 상당히 작은 드라이브로 제한되기 때문에 후자가 더 자주 사용됩니다.
+
+휴대용 하드 드라이브가 있는 경우 MBR형식일 가능성이 있으며 원시(raw) 디스크 장치의 터미널에서 다음을 시도 할 수 있습니다 (읽기 액세스를 위해서는 루트 여야합니다). 그렇지 않은 경우 출력 15-1에 표시된 것처럼 OS X hdiutil을 사용하여 MBR 기반 이미지를 만들 수 있습니다. 디스크 이미지 또는 .dmg 파일은 이 장의 뒷부분에서 설명합니다.
+
+![15-3](../img/chapter15/15-3.PNG)
+
+우리가 만든 이미지를 부팅 할 수 없기 때문에 처음 440(0x1b8) 바이트는 모두 0입니다. 다음은 선택적인 32비트 디스크 서명(이 경우에는 없음)과 예약된 2 바이트입니다. 0x1be의 비정상적인 offset에는 파티션 테이블이 있습니다. 이는 32 비트 경계가 아닌 16에 정렬되어 있기 때문입니다. 각 항목은 16 바이트이며 앞의 예에서는 하나만 있습니다. 
+
+이전 output과 아래의 그림 15-4의 레코드 형식을 살펴보면, 파티션이 부팅 불가능한 HFS+ 파티션(0xAF)이며 LBA 블록 1에서 시작하여 131,071블록(64MB)에 걸쳐 있다는 결론에 빨리 도달해야 합니다.
+
+![15-4](../img/chapter15/15-4.PNG)
+
+제공된 간단한 예에서 MBR이 종료되는 이유가 분명합니다. 32 비트로 최적화되지 않았으며 4 개의 기본 파티션으로 제한되며 C / H / S 추출은 간단하지 않으며 (여러 비트 시프트 필요) 주소 지정 및 1023 개의 실린더, 63 개의 헤드 및 254 개의 섹터로 제한됩니다. 지금까지 MBR의 생존을 허용하는 유일한 방법은 LBA가 최대 2TB를 처리 할 수 있으므로 C/H/S가 아닌 LBA (Large Block Access) 블록 주소를 사용하는 것입니다. 공간은 날이 더욱 풍성해집니다. 애플은 이러한 한계와 다른 한계를 상당히 일찍 극복했기 때문에 자체 파티션 스키마인 애플 파티션 스키마를 채택했습니다.
+
+## The Apple Partitioning Scheme
+
+APM (Apple Partitioning Scheme)은 MBR의 대안으로 Apple에서 설계 한 것으로, 4개의 기본 파티션의 한계를 해결하고 LBA를 허용합니다. 요즘은 PPC 기반 Mac이나 iPod Classic 또는 Nano가 없는 한 Apple Partitioning Scheme으로 포맷된 디스크는 일반적으로 덜 접하게 됩니다. 그러나 여기서도 OS X의 hdiutil 도구를 사용하여 APM 형식의 DMG 파일을 만들 수 있습니다. 그런 다음 출력 15-2에 표시된 명령을 사용하여 장치를 따라갈 수 있습니다.
+
+![15-5-1](../img/chapter15/15-5-1.PNG)
+
+![15-5-2](../img/chapter15/15-5-2.PNG)
+
+이 예제에서는 처음에 파티션이 하나인 256MB 디스크 이미지를 만든 다음 각각 별도의 파일 시스템 유형을 포함하는 3개로 다시 분할했습니다. 파티션 맵 자체는 파티션을 사용하기 때문에 (앞의 예에서/dev/disk4s1), 사용 가능한 파티션은 /dev/disk4s2에서 /dev/disk4s4까지 4개의 파티션으로 끝납니다. 기술적으로 APM에는 디스크의 모든 블록을 파티션으로 덮어야하기 때문에 여유 공간을 확보하기위한 파티션이 하나 더 있습니다. 그러나 여유 공간은 장치 노드로 액세스 할 수 없습니다 (즉, 앞의 예에는 /dev/disk4s5가 없습니다).
+
+디스크 수준에서 APM은 디스크의 첫 번째 블록인 블록 0을 특수 드라이버 descriptor 맵에 예약합니다. <IOStorage / IOApplePartitionScheme.h>에 정의된 블록 0은 고정된 ER signature(0x4552)로 식별할 수 있습니다. 블록은 512 블록 바이트 중 82만 차지하는 구조로 대부분 사용되지 않습니다. 일반적으로 그림 15-6에서 볼 수 있듯이 대부분의 구조 필드는 0으로 유지되며 서명, 블록 크기 및 블록 수는 두 가지 중요합니다.
+
+![15-6](../img/chapter15/15-6.PNG)
+
+앞의 예제에서 볼 수 있듯이, 우리의 디스크 블록 크기는 512바이트(0x0200)이며, 디스크에는 표시에 바로 있는 524,288개(0x80000) 블록이 포함되어 있으며, 총 256MB이다.
+
+파티션 맵은 첫 번째 블록에서 찾을 수 있습니다 (512 바이트 블록 크기의 경우 0x200 offset). 각 항목은 하나의 블록을 차지합니다. 맵 자체에 대한 항목 하나와 사용 가능한 공간(Apple_Free)에 대한 항목 하나를 세면, 사용 가능한 파티션보다 항상 두 개의 항목이 더 있을 것 입니다. 예를 들어, 본 예제에서 세 개에 대해 다섯 개의 항목이 있을 것 입니다.
+
+![15-7](../img/chapter15/15-7.PNG)
+
+## The GPT Partitioning Scheme
+
+The Globally Unique Identifier Partition Table (GUID PT, or GPT, for short)는 Extensible Firmware Interface 사양의 일부로 개발되었습니다. Apple이 Intel 기반 아키텍처로 전환했을 때 더 큰 디스크를 위해 APM을 수정하는 대신 GPT를 채택하는 것이 합리적이었습니다. 실제로, Apple의 기술 노트 TN2166은 APM을 효과적으로 사용하지 않아서 2TB가 표준이 되는 디스크를 상상할 수 있다고합니다. GPT는 여전히 시대에 앞서 있지만 OS X 및 iOS에서 모두 사용됩니다.
+
+GPT는 Extensible Firmware Interface 표준의 일부로 완전히 지정되어 있습니다. EFI는 6 장에서 이미 자세히 설명했습니다. EFI의 전체 사양은 GPT에 대한 포괄적 인 세부 정보도 제공합니다. 시스템 관리 명령 gpt는 GPT 테이블을 조작하는 데 사용할 수 있다(파티션의 추가/제거/라벨에만 사용되며 크기를 조정하지 않는다). (그림 15-8 참조)
+
+![15-8](../img/chapter15/15-8.PNG)
+
+MBR과의 역 호환성을 제공하기 위해 GPT 포맷 디스크의 첫 번째 섹터 (LBA 0)에는 "보호 MBR"이 포함되어 있습니다. 레거시 운영체제에 대한 이 정의는 전체 디스크를 알 수 없는 파티션(0xEE)으로 정의하여 unformatted 디스크로 잘 못 분류되지 않도록 합니다. 
+
+실제 GPT는 두 번째 섹터 (LBA 1)에 있습니다. 이 섹터에는 GPT 헤더가 포함되어 있으며 GPT 매직 문자열 EFI PART (0x45 0x46 0x49 0x20 0x50 0x41 0x52 0x54)로 시작하고 파티션 맵 세부 정보를 포함합니다. 헤더 다음에는 단순히 파티션 배열인 파티션 맵이 있습니다. 이러한 구조는 IOKit 프레임 워크의 storage / IOGUIDPartitionScheme.h에 정의되어 있습니다 (목록 15-9 참조).
+
+![15-9](../img/chapter15/15-9.PNG)
+
+GPT 파티션의 이름을 지정 (또는“labeled”) 할 수 있으므로 부팅 파티션을 정의 할 때 유연성이 향상됩니다. 이렇게하면 파티션을 다시 정렬하거나 디스크를 추가/제거하여 부팅 할 수 없는 시스템 시나리오를 피할 수 있습니다.
+
+## Lightweight Volume Manager
+
+LwVM (Lightweight Volume Manager)은 Apple 고유의 파티션 스키마이며 iOS 5에서 기본값으로 GPT를 상속했습니다. 개념적으로 GPT와 다소 유사하지만 파티션 암호화도 허용합니다.
+
+독점(Proprietary) 형식은 OpeniBoot 개발자가 리버스 엔지니어링 한 것으로 Listing 15-10과 다소 비슷합니다.
+
+![15-10](../img/chapter15/15-10.PNG)
+
+알려진 유일한 속성은 암호화되어 파티션이 암호화되어 커널에 의해 해독되어야 함을 지정합니다.
+예를 들어, 2 개의 파티션이 있는 64GB 장치(작성자의 iPod Touch 64GB)의 iOS 5 시스템에서 출력 15-11의 od 출력을 고려하십시오.
+
+![15-11](../img/chapter15/15-11.PNG)
+
+LwVM은 iOS의 모든 kext와 마찬가지로 커널에 사전 연결되어있는 전용 커널 확장 인 LightweightVolumeManager.kext (com .apple.driver.LightweightVolumeManager)에 의해 iOS에서 처리됩니다.
+
+## CoreStorage
+
+CoreStorage는 Lion에 도입 된 새로운 파티션 유형으로, OS X에 필요한 논리적 볼륨 관리 지원을 제공합니다. CoreStorage 파티션은 동적으로 확장하거나 축소 할 수있는 논리 볼륨으로 여러 파티션에 걸쳐있을 수 있습니다. CoreStorage는 또한 전체 디스크 암호화 (일반적으로 FDE라고 함)를 활성화하며 FileVault 2의 기능을 사용하려면 필요합니다. CoreStorage 볼륨은 GPT 드라이브에서만 만들 수 있으며 HFS + 파티션은 저널링해야합니다.
+
+현재 CoreStorage 볼륨 형식은 Lion에서 지원되지만 문서화되어 있지 않습니다. 새로운 "corestorage" 하위 명령이 있는 diskutil을 사용하여 파티션을 만들 수 있습니다. 여기서 그림 15-12에 표시된 명령을 사용할 수 있습니다.
+
+![15-12-1](../img/chapter15/15-12-1.PNG)
+
+![15-12-2](../img/chapter15/15-12-2.PNG)
+
+encryptVolume 및 decryptVolume은 Mountain Lion의 새로운 기능입니다. deleteVolume 명령은 문서화되지 않았지만 Lion에 있었습니다. 또한 addDisk, resizeDisk, resizeVolume, resizeStack 및 removeDisk는 의심할 여지없이 매우 유용하지만 둘 다 문서화되지 않은 상태로 남아 있습니다. 그러나 시도하면 사용법에 대한 도움말이 표시됩니다.
+
+볼륨의 CoreStorage로의 변환은 암호화가 되지 않는 한 되돌릴 수 있다(그리고 되돌릴 수 있는 동사를 사용하여 해제될 수도 있다).
+
+diskutil 외에도 fsck_cs 명령이 Lion에서 제공되어 CoreStorage 파티션을 확인하고 복구합니다. 실제 파티션 처리 로직은 CoreStorageFsck 플러그인 kext가 추가 된 커널 확장 CoreStorage.kext (com.apple.driver.CoreStorage라고도 함)에 의해 제공됩니다.
+
+CoreStorage 디스크에서 gpt 명령을 사용하면 파티션 구조를 표시 할 수 있습니다. 그림 15-13은 CoreStorage 포맷 디스크에서이 명령의 결과를 보여줍니다 (CoreStorage를 지원하지 않는 Snow Leopard에서).
+
+기본 장치를 통해 파티션을 직접 검사하면 CoreStorage와 관련된 구조가 나타납니다 :
+
+ - CoreStorage와 관련된 GPT GUID는 53746F72-6167-11AA-AA11-00306543ECAC입니다. od –x의 렌즈를 통해 볼 때 이것은 6f72 5374 6167 11aa 11aa 3000 4365 acec로 나타납니다.
+ 
+ - CoreStorage 볼륨 GUID도 CoreStorage 파티션 헤더에 나타납니다. 논리 볼륨 및 볼륨 그룹의 GUID는 각각 offset 304 및 320에 있습니다.
+ 
+ - CoreStorage 파티션은 실제로 HFS+ 파일 시스템 구현입니다. 그러나 직접 마운트 할 수 없으며 대부분 Spotlight에서 사용하기 위한 파일이 포함되어 있습니다. HFS+ 파일 시스템 구조의 디버깅 및 표시에 특히 적합한이 책의 웹 사이트에있는 hfsleuth 도구를 사용하여 CoreStorage 파티션을 표시 할 수도 있습니다.
+ 
+리버스 엔지니어링 CoreStorage는 OS X 외부로 확장하기 위한 지속적인 프로젝트입니다. 최신 상태 및 정보는 이 책의 웹 사이트를 확인하십시오.
+
+## GENERIC FILE SYSTEM CONCEPTS
+
+파일 시스템마다 디스크에서 파일을 관리하는 방법이 완전히 다르지만 일반적으로 모두 동일한 기본 형식으로 작동합니다. VFS(Virtual FileSystem Switch)라고 하는 파일에 대한 커널 인터페이스는 이러한 개념을 기반으로 구축된다.
+
+## Files
+
+파일 시스템에서 가장 기본적인 개념이 파일 자체의 개념이라는 것은 놀라운 일이 아닙니다. 파일 시스템의 관점에서 볼 때 파일은 기본 미디어 (디스크, CD-ROM 또는 기타)에있는 하나 이상의 블록 배열입니다. 최적의 경우, 파일은 하나의 연속 된 블록 시퀀스입니다. 그러나 파일은 여러 블록 범위에 걸쳐 있습니다. 이를 일반적으로 extents라고합니다. HFS+는 파일이 할당되거나 확장 될 때 파일에 제공되는 기본 할당 블록인 덩어리(clumps)를 정의합니다.
+
+조각화에 관계없이 파일 시스템은 파일 모양을 연속적이고 자유롭게 찾을 수 있는(랜덤 액세스) 영역으로 표시해야합니다. 요청자는 기본 구현에 대해 아무것도 알 필요가 없습니다. 실제로 일부 파일 시스템은 완전히 가상 (예 : Linux / proc) 인 반면 다른 파일 시스템은 네트워크 (NFS 또는 AFS 등)를 통해 매핑 될 수 있습니다. 따라서 요청자는 오직 하나의 파일 디스크립터(open에서 리턴 된 int fd 또는 fopen에서 리턴 된 FILE*)만 포함하지만 이를 불분명한 핸들로 취급합니다. 커널은 파일 요청을 처리 할 때 핸들을 파일 시스템의 식별자로 변환합니다.
+
+## Extended Attributes
+
+XNU의 VFS는 일반적인 파일 속성 외에도 확장 된 속성 개념을 지원합니다. 이러한 속성은 사용자(또는 시스템) 정의 속성이며, 애플리케이션에서 사용하는 정보 또는 많은 경우 시스템 자체를 포함할 수 있다. Darwin에서는 확장 속성을 사용하여 투명한 압축 및 포크 (다음 장에서 설명) 및 액세스 제어 목록 (다음에 설명)과 같은 고급 기능을 지원합니다.
+
+## Permissions
+
+
+## Timestamps
+
+## Shortcuts and Links
+
+## File System in the apple ecoSystem
+
+## Native Apple File System
+
+### Hierarchical File System(HFS)
+
+### Hierarchical File System Plus(HFS+)
+
+## Dos/Windows File System
+
+### File Allocation Table(FAT)
+
+### NT File System(NTFS)
+
+## CD/DVD File
+
+### The CD/Audio File System(CDDAFS)
+
+### CD-ROM File System(CDFS/IOS-9660)
+
+### universal Disk Format(UDF)
+
+## Network-Based File Systems
+
+### Apple Filing Protocol
+
+### Network File System
+
+### Server Message Block(SMB/CIFS/SMB2)
+
+### File Transfer Protocol
+
+### Web Distributed Authoring and Versioning
+
+## Pseudo File Systems
+
+### The devfs File System
+
+### The FIFOfs vnode Type
+
+
+
+
+
+### The specfs vnode Type
+
+### The deadfs vnode Type
+
+### The unionfs Layering Mechanism
+
+## Mounting File System(OS X Only)
+
+### AutoMount
+
+### Disk Arbitration
+
+## Disk Image File
+
+### Raw DMG Files
+
+## Booting from a Disk Image
+
+## The Virtual File System Switch
+
+## The File System Entry
+
+## The Mount Entry
+
+## The vnode object
+
+## Fuse - File System in USEr Space
+
+## File I/O From Processes
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
