@@ -12,11 +12,11 @@ OS X 및 iOS는 하드 디스크를 장치 노드로 취급하는 BSD 규칙을 
 
 디스크 드라이버는 또한 <sys/disk.h>에 정의 된 표준 ioctl 인터페이스를 제공하여 다양한 쿼리 작업을 수행 할 수 있습니다. 헤더는 꽤 잘 문서화되어 있으며 목록 15-1에 표시된 코드를 정의합니다.
 
-![15-1](../img/chapter15/15-1.PNG)
+![15-1](../../img/chapter15/15-1.PNG)
 
-![15-2-1](../img/chapter15/15-2-1.PNG)
+![15-2-1](../../img/chapter15/15-2-1.PNG)
 
-![15-2-2](../img/chapter15/15-2-2.PNG)
+![15-2-2](../../img/chapter15/15-2-2.PNG)
 
 ioctl()에 대한 디스크 장치를 확보하려면 읽기 권한이 필요하며 일반적으로 루트가 아닌 (또는 그룹이 아닌 운영자) 사용자에게는 부여되지 않습니다.
 
@@ -45,13 +45,13 @@ MBR 테이블은 매우 단순하게 유지됩니다. 항상 64바이트이기 �
 
 휴대용 하드 드라이브가 있는 경우 MBR형식일 가능성이 있으며 원시(raw) 디스크 장치의 터미널에서 다음을 시도 할 수 있습니다 (읽기 액세스를 위해서는 루트 여야합니다). 그렇지 않은 경우 출력 15-1에 표시된 것처럼 OS X hdiutil을 사용하여 MBR 기반 이미지를 만들 수 있습니다. 디스크 이미지 또는 .dmg 파일은 이 장의 뒷부분에서 설명합니다.
 
-![15-3](../img/chapter15/15-3.PNG)
+![15-3](../../img/chapter15/15-3.PNG)
 
 우리가 만든 이미지를 부팅 할 수 없기 때문에 처음 440(0x1b8) 바이트는 모두 0입니다. 다음은 선택적인 32비트 디스크 서명(이 경우에는 없음)과 예약된 2 바이트입니다. 0x1be의 비정상적인 offset에는 파티션 테이블이 있습니다. 이는 32 비트 경계가 아닌 16에 정렬되어 있기 때문입니다. 각 항목은 16 바이트이며 앞의 예에서는 하나만 있습니다. 
 
 이전 output과 아래의 그림 15-4의 레코드 형식을 살펴보면, 파티션이 부팅 불가능한 HFS+ 파티션(0xAF)이며 LBA 블록 1에서 시작하여 131,071블록(64MB)에 걸쳐 있다는 결론에 빨리 도달해야 합니다.
 
-![15-4](../img/chapter15/15-4.PNG)
+![15-4](../../img/chapter15/15-4.PNG)
 
 제공된 간단한 예에서 MBR이 종료되는 이유가 분명합니다. 32 비트로 최적화되지 않았으며 4 개의 기본 파티션으로 제한되며 C / H / S 추출은 간단하지 않으며 (여러 비트 시프트 필요) 주소 지정 및 1023 개의 실린더, 63 개의 헤드 및 254 개의 섹터로 제한됩니다. 지금까지 MBR의 생존을 허용하는 유일한 방법은 LBA가 최대 2TB를 처리 할 수 있으므로 C/H/S가 아닌 LBA (Large Block Access) 블록 주소를 사용하는 것입니다. 공간은 날이 더욱 풍성해집니다. 애플은 이러한 한계와 다른 한계를 상당히 일찍 극복했기 때문에 자체 파티션 스키마인 애플 파티션 스키마를 채택했습니다.
 
@@ -59,21 +59,21 @@ MBR 테이블은 매우 단순하게 유지됩니다. 항상 64바이트이기 �
 
 APM (Apple Partitioning Scheme)은 MBR의 대안으로 Apple에서 설계 한 것으로, 4개의 기본 파티션의 한계를 해결하고 LBA를 허용합니다. 요즘은 PPC 기반 Mac이나 iPod Classic 또는 Nano가 없는 한 Apple Partitioning Scheme으로 포맷된 디스크는 일반적으로 덜 접하게 됩니다. 그러나 여기서도 OS X의 hdiutil 도구를 사용하여 APM 형식의 DMG 파일을 만들 수 있습니다. 그런 다음 출력 15-2에 표시된 명령을 사용하여 장치를 따라갈 수 있습니다.
 
-![15-5-1](../img/chapter15/15-5-1.PNG)
+![15-5-1](../../img/chapter15/15-5-1.PNG)
 
-![15-5-2](../img/chapter15/15-5-2.PNG)
+![15-5-2](../../img/chapter15/15-5-2.PNG)
 
 이 예제에서는 처음에 파티션이 하나인 256MB 디스크 이미지를 만든 다음 각각 별도의 파일 시스템 유형을 포함하는 3개로 다시 분할했습니다. 파티션 맵 자체는 파티션을 사용하기 때문에 (앞의 예에서/dev/disk4s1), 사용 가능한 파티션은 /dev/disk4s2에서 /dev/disk4s4까지 4개의 파티션으로 끝납니다. 기술적으로 APM에는 디스크의 모든 블록을 파티션으로 덮어야하기 때문에 여유 공간을 확보하기위한 파티션이 하나 더 있습니다. 그러나 여유 공간은 장치 노드로 액세스 할 수 없습니다 (즉, 앞의 예에는 /dev/disk4s5가 없습니다).
 
 디스크 수준에서 APM은 디스크의 첫 번째 블록인 블록 0을 특수 드라이버 descriptor 맵에 예약합니다. <IOStorage / IOApplePartitionScheme.h>에 정의된 블록 0은 고정된 ER signature(0x4552)로 식별할 수 있습니다. 블록은 512 블록 바이트 중 82만 차지하는 구조로 대부분 사용되지 않습니다. 일반적으로 그림 15-6에서 볼 수 있듯이 대부분의 구조 필드는 0으로 유지되며 서명, 블록 크기 및 블록 수는 두 가지 중요합니다.
 
-![15-6](../img/chapter15/15-6.PNG)
+![15-6](../../img/chapter15/15-6.PNG)
 
 앞의 예제에서 볼 수 있듯이, 우리의 디스크 블록 크기는 512바이트(0x0200)이며, 디스크에는 표시에 바로 있는 524,288개(0x80000) 블록이 포함되어 있으며, 총 256MB이다.
 
 파티션 맵은 첫 번째 블록에서 찾을 수 있습니다 (512 바이트 블록 크기의 경우 0x200 offset). 각 항목은 하나의 블록을 차지합니다. 맵 자체에 대한 항목 하나와 사용 가능한 공간(Apple_Free)에 대한 항목 하나를 세면, 사용 가능한 파티션보다 항상 두 개의 항목이 더 있을 것 입니다. 예를 들어, 본 예제에서 세 개에 대해 다섯 개의 항목이 있을 것 입니다.
 
-![15-7](../img/chapter15/15-7.PNG)
+![15-7](../../img/chapter15/15-7.PNG)
 
 ## The GPT Partitioning Scheme
 
@@ -81,13 +81,13 @@ The Globally Unique Identifier Partition Table (GUID PT, or GPT, for short)는 E
 
 GPT는 Extensible Firmware Interface 표준의 일부로 완전히 지정되어 있습니다. EFI는 6 장에서 이미 자세히 설명했습니다. EFI의 전체 사양은 GPT에 대한 포괄적 인 세부 정보도 제공합니다. 시스템 관리 명령 gpt는 GPT 테이블을 조작하는 데 사용할 수 있다(파티션의 추가/제거/라벨에만 사용되며 크기를 조정하지 않는다). (그림 15-8 참조)
 
-![15-8](../img/chapter15/15-8.PNG)
+![15-8](../../img/chapter15/15-8.PNG)
 
 MBR과의 역 호환성을 제공하기 위해 GPT 포맷 디스크의 첫 번째 섹터 (LBA 0)에는 "보호 MBR"이 포함되어 있습니다. 레거시 운영체제에 대한 이 정의는 전체 디스크를 알 수 없는 파티션(0xEE)으로 정의하여 unformatted 디스크로 잘 못 분류되지 않도록 합니다. 
 
 실제 GPT는 두 번째 섹터 (LBA 1)에 있습니다. 이 섹터에는 GPT 헤더가 포함되어 있으며 GPT 매직 문자열 EFI PART (0x45 0x46 0x49 0x20 0x50 0x41 0x52 0x54)로 시작하고 파티션 맵 세부 정보를 포함합니다. 헤더 다음에는 단순히 파티션 배열인 파티션 맵이 있습니다. 이러한 구조는 IOKit 프레임 워크의 storage / IOGUIDPartitionScheme.h에 정의되어 있습니다 (목록 15-9 참조).
 
-![15-9](../img/chapter15/15-9.PNG)
+![15-9](../../img/chapter15/15-9.PNG)
 
 GPT 파티션의 이름을 지정 (또는“labeled”) 할 수 있으므로 부팅 파티션을 정의 할 때 유연성이 향상됩니다. 이렇게하면 파티션을 다시 정렬하거나 디스크를 추가/제거하여 부팅 할 수 없는 시스템 시나리오를 피할 수 있습니다.
 
@@ -97,12 +97,12 @@ LwVM (Lightweight Volume Manager)은 Apple 고유의 파티션 스키마이며 i
 
 독점(Proprietary) 형식은 OpeniBoot 개발자가 리버스 엔지니어링 한 것으로 Listing 15-10과 다소 비슷합니다.
 
-![15-10](../img/chapter15/15-10.PNG)
+![15-10](../../img/chapter15/15-10.PNG)
 
 알려진 유일한 속성은 암호화되어 파티션이 암호화되어 커널에 의해 해독되어야 함을 지정합니다.
 예를 들어, 2 개의 파티션이 있는 64GB 장치(작성자의 iPod Touch 64GB)의 iOS 5 시스템에서 출력 15-11의 od 출력을 고려하십시오.
 
-![15-11](../img/chapter15/15-11.PNG)
+![15-11](../../img/chapter15/15-11.PNG)
 
 LwVM은 iOS의 모든 kext와 마찬가지로 커널에 사전 연결되어있는 전용 커널 확장 인 LightweightVolumeManager.kext (com .apple.driver.LightweightVolumeManager)에 의해 iOS에서 처리됩니다.
 
@@ -112,9 +112,9 @@ CoreStorage는 Lion에 도입 된 새로운 파티션 유형으로, OS X에 필�
 
 현재 CoreStorage 볼륨 형식은 Lion에서 지원되지만 문서화되어 있지 않습니다. 새로운 "corestorage" 하위 명령이 있는 diskutil을 사용하여 파티션을 만들 수 있습니다. 여기서 그림 15-12에 표시된 명령을 사용할 수 있습니다.
 
-![15-12-1](../img/chapter15/15-12-1.PNG)
+![15-12-1](../../img/chapter15/15-12-1.PNG)
 
-![15-12-2](../img/chapter15/15-12-2.PNG)
+![15-12-2](../../img/chapter15/15-12-2.PNG)
 
 encryptVolume 및 decryptVolume은 Mountain Lion의 새로운 기능입니다. deleteVolume 명령은 문서화되지 않았지만 Lion에 있었습니다. 또한 addDisk, resizeDisk, resizeVolume, resizeStack 및 removeDisk는 의심할 여지없이 매우 유용하지만 둘 다 문서화되지 않은 상태로 남아 있습니다. 그러나 시도하면 사용법에 대한 도움말이 표시됩니다.
 
@@ -124,7 +124,7 @@ diskutil 외에도 fsck_cs 명령이 Lion에서 제공되어 CoreStorage 파티�
 
 CoreStorage 디스크에서 gpt 명령을 사용하면 파티션 구조를 표시 할 수 있습니다. 그림 15-13은 CoreStorage 포맷 디스크에서이 명령의 결과를 보여줍니다 (CoreStorage를 지원하지 않는 Snow Leopard에서).
 
-![15-13](../img/chapter15/15-13.PNG)
+![15-13](../../img/chapter15/15-13.PNG)
 
 기본 장치를 통해 파티션을 직접 검사하면 CoreStorage와 관련된 구조가 나타납니다 :
 
@@ -164,11 +164,11 @@ XNU의 VFS는 일반적인 파일 속성 외에도 확장 된 속성 개념을 �
 
 대부분의 UNIX 사용자는 소프트("심볼릭"이라고도 함) 및 하드 링크에 대해 잘 알고 있습니다. 소프트 링크는 ln –s로 작성되는 반면 하드 sibling은 스위치 없이 작성됩니다. VFS의 관점에서 소프트 링크는 l 유형의 다른 파일(즉, 다른 inode)이며, 가리키는 파일의 이름을 포함하고 있습니다. 반면, 하드 링크는 동일한 기본 파일(또는 VFS의 관점에서 볼 수 있듯이 동일한 inode)을 가리키는 또 다른 디렉토리 항목이다. 그것을 보는 또 다른 방법은 하드 링크가 디렉토리 레벨에 존재하는 반면 소프트 링크는 파일 레벨에 존재한다는 것입니다.(그림 15-14 참고)
 
-![15-14](../img/chapter15/15-14.PNG)
+![15-14](../../img/chapter15/15-14.PNG)
 
 하드 링크는 소프트 링크와 마찬가지로 파일 바로 가기를 설정하는 메커니즘을 제공합니다. 그러나 소프트 링크와 달리 하드 링크는 파일에 대한 마지막 링크가 제거 된 경우에만 파일 시스템에서 파일이 제거되므로 실수로 파일을 삭제하지 못하게합니다. 표 15-15은 링크 유형 간의 차이점을 보여줍니다.
 
-![15-15](../img/chapter15/15-15.PNG)
+![15-15](../../img/chapter15/15-15.PNG)
 
 심볼릭 링크와 하드 링크에 대한 자세한 내용은 symlink (7) 매뉴얼 페이지를 참조하십시오.
 
@@ -232,7 +232,7 @@ iTunes 데이터베이스를 참조 할 수있는 경우 파일은 실제로 해
 
 마운트된 CD 파일 시스템에는 kext에 의해 생성 된 추가 숨겨진 파일 .TOC.plist가 있습니다(AppleCDDAFileSystemUtils.c의 CreateNewXMLFile()). 이 파일은 CD 세션과 트랙 목록을 포함하는 XML .plist입니다. 그림 15-16은 이러한 CD 목록을 보여줍니다.
 
-![15-16](../img/chapter15/15-16.PNG)
+![15-16](../../img/chapter15/15-16.PNG)
 
 ### CD-ROM File System(CDFS/IOS-9660)
 
@@ -252,7 +252,7 @@ Apple 자체 Apple AFP (Apple Filing Protocol)는 Mac OS 8 및 9의 기본 네�
 
 AFP는 여러 가지 개정을 거쳤으며, 버전 3.0은 OS X 서버의 첫 번째 버전과 함께 릴리스되었습니다. 그 이후로 HFS +의 확장된 속성, 더 최근에는 백업용 Apple Time Machine과 함께 작동하도록 개정되었습니다. AFP URL은 afp : // 형식을 채택합니다. mount(8) 및 df(1) 명령에서 AFP 파일 시스템은 그림 15-17에서처럼 afp_xxx로 나타납니다.
 
-![15-17](../img/chapter15/15-17.PNG)
+![15-17](../../img/chapter15/15-17.PNG)
 
 ### Network File System
 
@@ -296,7 +296,7 @@ XNU는 여러 pseudo 파일 시스템을 지원합니다. 이들은 bsd / miscfs
 
 devfs는 표 15-18에 표시된 것처럼 네 가지 기능을 내보냅니다.
 
-![15-18](../img/chapter15/15-18.PNG)
+![15-18](../../img/chapter15/15-18.PNG)
 
 ### The FIFOfs vnode Type
 
@@ -304,15 +304,15 @@ FIFO는 "명명된(named) 파이프"의 UNIX 구현입니다. 익명 파이프�
 
 FIFOfs 구현은 단순히 일련의 vnode 작업 (bsd / miscfs / fifofs / fifo_ vnops.c)입니다. 이러한 작업(operation)은 해당 file에서 해당 시스템 콜을 실행할 때 커널에 의해 실행되는 콜백이다. FIFOfs의 경우 이러한 vnode 작업은 일부를 무효화하고 다른 작업을 무효화하고 나머지 작업에 대해 기본 구현을 제공함으로써 디폴트 vnode 작업을 재정의한다. 이들은 bsd/miscfs/ fifofs/fifo.h에 선언되어 있습니다. 이것은 그림 15-19에 표시됩니다.
 
-![15-19](../img/chapter15/15-19-1.PNG)
+![15-19](../../img/chapter15/15-19-1.PNG)
 
-![15-19](../img/chapter15/15-19-2.PNG)
+![15-19](../../img/chapter15/15-19-2.PNG)
 
 ### The specfs vnode Type
 
 FIFO와 마찬가지로 장치 특수 파일 (VBLK 및 VCHR)에는 사용자 지정 사양에 따라 "개인" 및 vnode 작업이 제공됩니다. 동일한 방식으로 bsd/miscfs/specfs/specdev.h에 정의된 대부분의 vnode 작업은 무효화되거나 무효화되며, 나머지는 기본 구현으로 지정됩니다. 이것은 그림 15-20에 표시됩니다.
 
-![15-20](../img/chapter15/15-20.PNG)
+![15-20](../../img/chapter15/15-20.PNG)
 
 ### The deadfs vnode Type
 
@@ -348,9 +348,9 @@ OS X의 자동 마운트는 Solaris, BSD 및 Linux에서 찾을 수 있는 UNIX 
 
 diskarbitrationd를 들여다 볼 수 있는 좋은 방법은 –d 명령줄로 시작하는 것입니다. 실행 된 com.apple.diskarbitrationd.plist를 편집하여 쉽게 수행 할 수 있습니다. 메시지는 /var/log/diskarbitrationd.log에 기록됩니다. 샘플 로그는 그림 15-21에 표시됩니다.
 
-![15-21](../img/chapter15/15-21-1.PNG)
+![15-21](../../img/chapter15/15-21-1.PNG)
 
-![15-21](../img/chapter15/15-21-2.PNG)
+![15-21](../../img/chapter15/15-21-2.PNG)
 
 diskarbitrationd는 또한 사용자 클라이언트가 마운트 결정에 참여하여 디스크 마운트 시도를 차단할 수 있습니다. DARegisterDiskMountApprovalCallback을 호출하면 프로그래머가 디스크 마운트 / 마운트 해제 작업에 대한 알림을 받을뿐만 아니라 잠재적으로 이를 차단할 수도 있습니다. Blocking은 DADissenterCreate를 사용하여 dissenter 객체를 만들어 승인 콜백에서 반환하는 간단한 문제입니다.
 
@@ -372,13 +372,13 @@ BSD계층은 vnode 디스크 드라이버에 디스크 이미지들을 위해 �
 
 DMG 확장은 잘못된 확장입니다. 대부분의 DMG는 독점 형식으로되어 있습니다 (때로는 file (1)에서 "VAX COFF 실행 파일"로 잘못 식별되는 경우가 있습니다). 다른 것들은 dd의 출력으로서 파일 시스템 블록의 사본인 raw 파일 시스템 이미지이며, 더 압축 될 수 있습니다. 이러한 DMG를 두 번 클릭하거나 동등한 명령을 사용하여 open을 연결하지 못합니다.  그러나 hdiutil (1)을 사용하면 명령 줄에 -imagekey diskimage-class = CRawDiskImage를 추가하여 강제로 첨부 할 수 있습니다. 이는 출력 15-22에 표시된 것처럼 (암호 해독 된 경우) 이러한 방식으로 마운트 할 수 있는 iOS DMG의 경우에 특히 유용합니다.
 
-![15-22](../img/chapter15/15-22.PNG)
+![15-22](../../img/chapter15/15-22.PNG)
 
 ## Booting from a Disk Image
 
 Lion에서 OS X은 사용자가 루트 파일 시스템으로 사용될 DMG 파일의 이름을 지정할 수있는 새로운 부팅 인수를 제공합니다. bsd/kern/imageboot.c에 있는 imageboot_needed( )는 부팅 인수가 있는지 확인하고, 발견되면 imageboot_setup()을 호출합니다. 이러한 부팅 인수는 표 15-23에 나와 있습니다.
 
-![15-23](../img/chapter15/15-23.PNG)
+![15-23](../../img/chapter15/15-23.PNG)
 
 DMG의 실제 로딩은 di_load_controller를 호출하여 IOHDIXController 확장을 로드하는 di_root_image(iokit/bsdev/DINetBootHook.cpp)에 의해 수행됩니다.
 
@@ -394,46 +394,46 @@ VFS는 파일 시스템의 기본 구현에 신경 쓰지 않습니다. VFS는 �
 
 파일 시스템은 커널에서 vfs_fsentry 구조의 배열로 유지됩니다. 15-24는 이 구조를 정의합니다.
 
-![15-24](../img/chapter15/15-24.PNG)
+![15-24](../../img/chapter15/15-24.PNG)
 
 파일 시스템은 Linux의 (un)register_file system()과 유사하게 각각 vfs_fsadd 또는 vfs_fsremove를 호출하여 커널에 추가 또는 제거됩니다. (그림 15-25 참조)
 
-![15-25](../img/chapter15/15-25.PNG)
+![15-25](../../img/chapter15/15-25.PNG)
 
 ## The Mount Entry
 
 마운트 항목은 구조체 마운트이고 마운트된 파일 시스템 인스턴스를 나타냅니다(bsd/sys/mount_internal.h에 정의되어 있으며 불분명한 유형으로만 유저모드에 노출됨). 이것은 대략 파일 시스템의 수퍼 블록에 해당하며, 이는 전역 파일 시스템 속성을 보유한 설명자입니다. 마운트 항목은 또한 파일 시스템 작업(struct vfsops)도 보유합니다. 구조는 목록 15-26에 표시되어 있습니다.
 
-![15-26](../img/chapter15/15-26-1.PNG)
+![15-26](../../img/chapter15/15-26-1.PNG)
 
-![15-26](../img/chapter15/15-26-2.PNG)
+![15-26](../../img/chapter15/15-26-2.PNG)
 
 파일 시스템은 (앞서 설명한대로 vfs_fsadd ()를 사용하여) 등록 할 수 있지만 반드시 마운트 할 필요는 없습니다. 또한 동일한 파일 시스템 유형이 여러 번 마운트 될 수 있습니다 (예 : 여러 파티션이 동일한 형식 유형을 갖는 경우).
 
 mount 및 vfs_fsentry 구조의 키는 vfsops (mount, mnt_op 및 vfs_ fsentry, vfe_vfsops)입니다. 이는 모든 파일 시스템에서 예상되는 표준 추상 작업입니다. 그것들은 bsd/sys/mount.h에 정의되어 있고 (정말로 깔끔하게 javadoc되어 있습니다) 표 15-27에 나와 있습니다.
 
 
-![15-27](../img/chapter15/15-27-1.PNG)
+![15-27](../../img/chapter15/15-27-1.PNG)
 
-![15-27](../img/chapter15/15-27-2.PNG)
+![15-27](../../img/chapter15/15-27-2.PNG)
 
-![15-27](../img/chapter15/15-27-3.PNG)
+![15-27](../../img/chapter15/15-27-3.PNG)
 
 ## The vnode object
 
 vnode 오브젝트는 기존 UNIX inode(Legacy UFS) 위에 빌드됩니다. 디스크에서 파일 또는 디렉토리를 검색하는 데 필요한 정보가 들어있는 "가상 inode"입니다. struct vnode는 bsd/sys/vnode_internal.h에 정의되어 있으며 struct mount와 같이 유저 모드에 노출되지 않습니다. 이것은 목록 15-28에 표시되어 있습니다.
 
-![15-28](../img/chapter15/15-28-1.PNG)
+![15-28](../../img/chapter15/15-28-1.PNG)
 
-![15-28](../img/chapter15/15-28-2.PNG)
+![15-28](../../img/chapter15/15-28-2.PNG)
 
 vnode 구조의 핵심 요소는 struct ubc_info입니다. 이는 통합 버퍼 캐시에서 vnode의 오브젝트에 대한 정보를 찾는데 사용할 수 있습니다. 통합 버퍼 캐시(bsd/kern/ubc_subr.c에서 구현됨)는 디스크 및 장치에서 가져온 파일(Linux의 버퍼 및 페이지 캐시에 영향을 미침)의 캐시된 vnode 데이터를 저장하기 위한 BSD 메커니즘입니다. ubc_info는 vnode를 Mach memory_ object_t에 연결하며, 이전 장에서 설명했던 것과 비슷합니다. 각 파일 시스템은 자체 내부 노드 표현을 정의할 수 있지만 vnode에 정의된 작업 세트(생성, 읽기, 쓰기, 삭제)뿐만 아니라 vnode의 기본 표현도 지원해야합니다. 다양한 vnode 작업은 잘 정리된 bsd/sys/vnode_if.h에서 유지됩니다. (목록 15-29 참조)
 
-![15-29](../img/chapter15/15-29.PNG)
+![15-29](../../img/chapter15/15-29.PNG)
 
 vnode에 대한 실제 I/O 작업은 Listing 15-30에 표시된 것처럼 struct 파일에서 정의됩니다.
 
-![15-30](../img/chapter15/15-30.PNG)
+![15-30](../../img/chapter15/15-30.PNG)
 
 ## Fuse - File System in USEr Space
 
@@ -459,13 +459,13 @@ FUSE의 커널 구성 요소는 매우 간단합니다. vfs_fsadd를 사용하�
 
 유저모드 파일 시스템은 struct fuse_operations를 파일 작업 콜백으로 채운 다음 fuse_main ()을 호출하여 나머지 작업을 수행합니다. 이것은 Listing 15-32에 표시되어있다 :
 
-![15-32](../img/chapter15/15-32.PNG)
+![15-32](../../img/chapter15/15-32.PNG)
 
 fuse_operations (LibFUSE의 fuse.h에 정의 됨)에는 잘 알려진 모든 POSIX 파일 시스템 호출에 대한 핸들러가 포함되어 있습니다. 이들은 libFUSE의 디스패처에 등록되어 전달되는데, 커널에서 브리지 된 콜백을 수신하여 파일 시스템 별 구현으로 전달합니다. 파일 시스템은 일부 핸들러 만 구현할 수 있으며 핸들러는 NULL로 남겨 두도록 선택합니다.이 경우 libFUSE는 단순히 오류를 반환합니다. Listing 15-33는 이것을 do_write 핸들러와 함께 보여줍니다. 다른 처리기는 비슷한 방식으로 정의됩니다.
 
-![15-33](../img/chapter15/15-33-1.PNG)
+![15-33](../../img/chapter15/15-33-1.PNG)
 
-![15-33](../img/chapter15/15-33-2.PNG)
+![15-33](../../img/chapter15/15-33-2.PNG)
 
 유저모드 파일 시스템이 요청을 처리하면 응답이 다시 메시지로 직렬화되어 커널로 반환되고 요청자에게 반환되어 전체 bridging 프로세스를 알지 못합니다.
 
@@ -475,31 +475,31 @@ fuse_operations (LibFUSE의 fuse.h에 정의 됨)에는 잘 알려진 모든 POS
 
 13 장에서 BSD proc_t 구조는 많은 필드 중에서 struct filedesc * p_fd를 포함하고 있음을 상기하십시오. 이것은 Listing 15-34에 표시된 필드에 모든 프로세스의 열린 파일을 보유하는 구조이다.
 
-![15-34](../img/chapter15/15-34-1.PNG)
+![15-34](../../img/chapter15/15-34-1.PNG)
 
-![15-34](../img/chapter15/15-34-2.PNG)
+![15-34](../../img/chapter15/15-34-2.PNG)
 
 이 구조의 주요 필드는 fd_ofiles 및 fd_ofileflags입니다. 둘 다 배열이며 유저 모드의 익숙한 정수 파일 설명자 (0 — stdin; 1 – stdout, 2-stderr)는 해당 배열에 대한 인덱스입니다. 첫 번째 배열은 디스크립터에 해당하는 파일 "object"를 보유하는 반면, 두 번째 배열은 오픈 플래그 (즉, open (2) 시스템 호출에서 프로세스에 의해 지정된 플래그)에 사용됩니다. fp_ 조회는 주어진 파일 디스크립터에 해당하는 fileproc을 찾는데 사용될 수 있습니다. (목록 15-35 참조).
 
-![15-35](../img/chapter15/15-35-1.PNG)
+![15-35](../../img/chapter15/15-35-1.PNG)
 
-![15-35](../img/chapter15/15-35-2.PNG)
+![15-35](../../img/chapter15/15-35-2.PNG)
 
 그 이유는 모든 파일 데이터가 커널에서 글로벌로 유지되며 f_fglob 필드로만 지적되기 때문이다. 이것은 동일한 파일이 두 프로세스에 의해 열리면 각각 다른 파일 디스크립터 (따라서 각 프로세스에 대해 다른 fileproc)를 사용하여 파일을 참조 할 수 있지만, 기본 파일 데이터는 f_fglob 포인터에 의해 커널 메모리의 동일한 주소에 상주합니다. 이것은 Listing 15-36에 표시되어있다:
 
-![15-36](../img/chapter15/15-36-1.PNG)
+![15-36](../../img/chapter15/15-36-1.PNG)
 
-![15-36](../img/chapter15/15-36-2.PNG)
+![15-36](../../img/chapter15/15-36-2.PNG)
 
 fileglob 구조의 fg_data 필드는 내용이 fg_type에 의존하는 객체에 대한 포인터입니다. 파일 처리 시스템 콜은 일반적으로 fg_data 필드를 스위치합니다. 예제 15-37의 fstat1() 구현에서 좋은 예를 볼 수 있는데, 이는 fstat() 시스템 콜 제품군의 일반적인 구현입니다.
 
-![15-37](../img/chapter15/15-37-1.PNG)
+![15-37](../../img/chapter15/15-37-1.PNG)
 
-![15-37](../img/chapter15/15-37-2.PNG)
+![15-37](../../img/chapter15/15-37-2.PNG)
 
 읽기와 쓰기는 기본 파일 읽기/쓰기 구현으로 인수를 전달하는 간단한 문제가 됩니다. 예를 들어, Listing 15-38의 fo_read를 고려하십시오 (다른 함수도 비슷하게 구현 됨).
 
-![15-38](../img/chapter15/15-38.PNG)
+![15-38](../../img/chapter15/15-38.PNG)
 
 fileglob 구조의 f_ops 필드는 디폴트 파일 작업 set으로 설정됩니다. 이 역시 파일 유형 (vnode의 경우 vnops, pipes의 경우 pipeops 등)에 따라 변경됩니다. 이러한 방식으로 일반 작업을 모든 파일 형식에 맞출 수 있습니다.
 

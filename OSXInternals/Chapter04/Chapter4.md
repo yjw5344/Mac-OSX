@@ -81,7 +81,7 @@ Window의 PE, UNIX의 ELF(Executable and Library Format)가 있다면 Mach 커�
 
 헤더는 32 비트 (MH_MAGIC, # 0xFEEDFACE로 정의) 또는 64 비트 아키텍처 (0xFEEDFACF, # MH_MAGIC_64로 정의) 용으로 로더를 신속하게 결정할 수있는 매직 값으로 시작합니다. 매직값 다음에는 범용 이진 헤더에서와 동일한 기능을 제공하는 CPU 유형 및 하위 유형 필드가 있으며 이 아키텍처에서 이진을 실행하기에 적합합니다. 그 외에, 32 비트와 64 비트 아키텍처 사이의 헤더 구조에는 실질적인 차이가 없습니다.
 
-![그림 Mach-O](../img/chapter4/Mach-O.PNG)
+![그림 Mach-O](../../img/chapter4/Mach-O.PNG)
 
 Mach-O 파일은 헤더와 load commands, 세그먼트들로 구성된 데이터로 이루어져 있습니다. load commands는 OS가 어플리케이션 실행시에 라이브러리를 올리는 등의 실행에 필요한 명령어들의 집합입니다. 헤더에 대한 상세한 내용은 툴 사용법과 함께 알아 보겠습니다. 여러 객체 유형 (실행 파일, 라이브러리, 코어 파일 또는 커널 확장)에 동일한 이진 형식이 사용되므로 다음 파일 유형은 int이며 <mach-o / loader.h>에 정의 된 값을 갖습니다.
 
@@ -119,7 +119,7 @@ LC_DYLINKER 로드 명령에 따라 커널에 의해 동적 링커가 시작됩�
 
 ## Shared Library Caches
 
-![dyld cache format](../img/chapter4/dyld_cache_format.PNG)
+![dyld cache format](../../img/chapter4/dyld_cache_format.PNG)
 
 dyld는 공유 라이브러리 캐시를 지원합니다. 이런 라이브러리는 디스크의 한 파일에 사전 연결되어 저장되는 됩니다. OSX에서 dyld 공유 캐시는 /private/var/db/dyld 에 있습니다. 캐시는 단일 파일이고 dyld_shared_ cache_armv7 입니다. OSX 공유 캐시는 부수적으로 .map 파일이 있습니다.
 
@@ -204,7 +204,7 @@ Snow Leopard 이상은 libcache 및 Cocoa의 NSPurgeableData의 기반이되는 
 ### Page Lifecycle
 물리적 메모리 페이지는 표 4-10 및 그림 4-8에 표시된 것처럼 여러 상태 중 하나로 생활을 보냅니다.
 
-![Page Life Cycle](../img/chapter4/virtual_memory.PNG)
+![Page Life Cycle](../../img/chapter4/virtual_memory.PNG)
 
 #### vm_stat(1)
 vm_stat 유틸리티는 커널 내부 가상 메모리 카운터를 표시합니다. Mach 코어는 이러한 통계를 vm_statistics64 구조체로 유지하므로 이 유틸리티는 단순히 커널에서 통계를 요청하여 인쇄합니다.
@@ -238,7 +238,7 @@ vm_stat 유틸리티는 다양한 수명주기 단계의 페이지 수를 나열
 #### sysctl(8)
 커널 변수를 보고 토글하기 위한 UNIX 표준명령인 sysctl 명령을 사용하여 가상 메모리 설정을 관리 할 수 있습니다. 구체적으로 vm 네임스페이스는 다음과 같은 변수를 보유합니다.
 
-![](../img/chapter4/sysctl.PNG)
+![](../../img/chapter4/sysctl.PNG)
 
 #### dynamic_pager(8)
 OSX은 커널 수준에서 직접 관리되지 않는다는 점에서 독특합니다. 대신 dynamic_pager라는 전용 사용자 프로세스가 모든 스와핑 요청을 처리합니다. dynamic_pager는 디스크에서 스왑 공간을 관리합니다. dynamic_pager에는 고유 한 속성 목록 파일 (Library/Preferences/com.apple.virtualMemory.plist)이 있습니다. 위에서 언급 한 sysctl명령을 사용하여 vm.swapusage를 통해 스왑 사용률을 볼 수 있습니다.
