@@ -12,11 +12,11 @@ Mac OS X의 기본 구조를 공부하기 위해 [Youtube의 세미나](https://
 
 - Mac and iOS Internals
 
-![Book Cover](./img/InternalsBook/cover.png){: width="300" height="auto"}
+![Book Cover](./img/InternalsBook/cover.png)
 
 - Study 진행 목차
 
-![Book Index](./img/InternalsBook/index.png){: width="500"}
+![Book Index](./img/InternalsBook/index.png)
 
 - Study 내용
 
